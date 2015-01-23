@@ -36,10 +36,9 @@ def vm_list(s, opt):
         tabs.append(vals)
         tabs.sort(reverse=False)
 
-    if pool:
-        hd_total = "{0} / {1}".format(pool.hd_committed, pool.hd_uncommitted)
-        vals = [ "TOTAL", "", "", "", "", "", "", "", pool.cpu, pool.mem, "", hd_total, "" ]
-        tabs.append(vals)
+    hd_total = "{0} / {1}".format(pool.hd_committed, pool.hd_uncommitted)
+    vals = [ "TOTAL", "", "", "", "", "", "", "", pool.cpu, pool.mem, "", hd_total, "" ]
+    tabs.append(vals)
 
     print tabulate(tabs, headers)
 
