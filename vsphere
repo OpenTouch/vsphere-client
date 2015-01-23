@@ -20,7 +20,7 @@ Usage:
     vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<network_name>] [--folder=<Where_the_vm_is_stored>]
     vsphere vm delete <name>
     vsphere vm details <name>
-    vsphere vm list [<name>]
+    vsphere vm list
     vsphere vm start <name>
     vsphere vm stop <name>
     vsphere vm suspend <name>

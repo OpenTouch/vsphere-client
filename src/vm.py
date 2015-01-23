@@ -42,14 +42,8 @@ def vm_guess_folder(vm):
 
 def vm_list(s, opt):
     pool = VirtualMachinePool(s)
-    vm_name = opt['<name>']
-    if vm_name:
-        vm = pool.get(vm_name)
-        if vm:
-            vm_display_properties([vm])
-    else:
-        vms = pool.list()
-        vm_display_properties(vms, pool)
+    vms = pool.list()
+    vm_display_properties(vms, pool)
 
 def vm_details(s, opt):
     vm = VirtualMachine(s, name=opt['<name>'])
