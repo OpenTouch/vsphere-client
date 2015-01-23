@@ -3,6 +3,43 @@ from tasks import WaitForTasks
 from tabulate import tabulate
 from misc import sizeof_fmt, humanize_time, esx_get_obj
 
+###########
+# HELPERS #
+###########
+
+def vm_get_children(x, node):
+    children = node.childEntity
+    for c in children:
+        if type(c) == vim.Folder:
+            vm_get_children(x, c)
+        elif type(c) == vim.VirtualMachine:
+            x.append(c)
+
+def vm_display_properties(vms, pool=None):
+    tabs = []
+    headers = [ "Name", "Status", "Pool", "Host", "Folder", "HA", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
+
+    for vm in vms:
+        # retrieve infos
+        hd_size = "{0} / {1}".format(vm.hd_committed, vm.hd_uncommitted)
+        vals = [ vm.name, vm.status, vm.pool, vm.host, vm.folder, vm.ha,
+                 vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, hd_size, vm.uptime ]
+        tabs.append(vals)
+        tabs.sort(reverse=False)
+
+    if pool:
+        hd_total = "{0} / {1}".format(pool.hd_committed, pool.hd_uncommitted)
+        vals = [ "TOTAL", "", "", "", "", "", "", "", pool.cpu, pool.mem, "", hd_total, "" ]
+        tabs.append(vals)
+
+    print tabulate(tabs, headers)
+
+def vm_guess_folder(vm):
+    if vm.parent.name != "vm":
+        return vm_guess_folder(vm.parent) + vm.parent.name
+    else:
+        return "/"
+
 def vm_list(s, opt):
     pool = VirtualMachinePool(s)
     vm_name = opt['<name>']
@@ -72,31 +109,9 @@ def vm_parser(service, opt):
     elif opt['reboot']  == True: vm_reboot(service, opt)
     elif opt['suspend'] == True: vm_suspend(service, opt)
 
-def vm_display_properties(vms, pool=None):
-    tabs = []
-    headers = [ "Name", "Status", "Pool", "Host", "Folder", "HA", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
-
-    for vm in vms:
-        # retrieve infos
-        hd_size = "{0} / {1}".format(vm.hd_committed, vm.hd_uncommitted)
-        vals = [ vm.name, vm.status, vm.pool, vm.host, vm.folder, vm.ha,
-                 vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, hd_size, vm.uptime ]
-        tabs.append(vals)
-        tabs.sort(reverse=False)
-
-    if pool:
-        hd_total = "{0} / {1}".format(pool.hd_committed, pool.hd_uncommitted)
-        vals = [ "TOTAL", "", "", "", "", "", "", "", pool.cpu, pool.mem, "", hd_total, "" ]
-        tabs.append(vals)
-
-    print tabulate(tabs, headers)
-
-def vm_guess_folder(vm):
-    if vm.parent.name != "vm":
-        return vm_guess_folder(vm.parent) + vm.parent.name
-    else:
-        return "/"
-    
+###########
+# CLASSES #
+###########
 
 class VirtualMachineInfo:
     def __init__(self, vm):
@@ -243,14 +258,6 @@ class VirtualMachine:
         print 'Suspending VM %s' % self.name
         task = self.vm.SuspendVM_Task()
         WaitForTasks(self.service, [task])
-
-def vm_get_children(x, node):
-    children = node.childEntity
-    for c in children:
-        if type(c) == vim.Folder:
-            vm_get_children(x, c)
-        elif type(c) == vim.VirtualMachine:
-            x.append(c)
 
 class VirtualMachinePool:
     def __init__(self, service):
