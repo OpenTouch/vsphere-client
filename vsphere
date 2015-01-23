@@ -32,7 +32,7 @@ Options:
     -v, --version      Show this program version number.
 """
 
-import os, sys, stat, cmd, re, time
+import os, sys
 from docopt import docopt, DocoptExit
 from pyVim import connect
 from pyVmomi import vmodl, vim
