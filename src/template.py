@@ -2,6 +2,21 @@ from pyVmomi import vim
 from tabulate import tabulate
 from vm import vm_get_children, vm_guess_folder
 
+###########
+# HELPERS #
+###########
+
+def template_display_properties(templates):
+    tabs = []
+    headers = [ "Name", "Pool", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
+
+    for t in templates:
+        vals = [ t.name, t.pool, t.folder, t.os, t.cpu, t.mem, t.nic ]
+        tabs.append(vals)
+        tabs.sort(reverse=False)
+
+    print tabulate(tabs, headers)
+
 def template_list(s, opt):
     pool = TemplatePool(s)
     template_name = opt['<name>']
@@ -15,16 +30,9 @@ def template_list(s, opt):
 def template_parser(service, opt):
     if opt['list'] == True: template_list(service, opt)
 
-def template_display_properties(templates):
-    tabs = []
-    headers = [ "Name", "Pool", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
-
-    for t in templates:
-        vals = [ t.name, t.pool, t.folder, t.os, t.cpu, t.mem, t.nic ]
-        tabs.append(vals)
-        tabs.sort(reverse=False)
-
-    print tabulate(tabs, headers)
+###########
+# CLASSES #
+###########
 
 class TemplateInfo:
     def __init__(self, vm):
