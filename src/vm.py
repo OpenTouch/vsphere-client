@@ -56,7 +56,52 @@ def vm_details(s, opt):
     vm = vm_get(s, opt['<name>'])
     if not vm:
         return
-    vm.print_details()
+
+    d = vm.details()
+    details = {
+        'Name': d.name,
+        'Instance UUID': d.instance_uuid,
+        'Bios UUID': d.bios_uuid,
+        'Path to VM': d.path,
+        'Guest OS id': d.guest_id,
+        'Guest OS name': d.guest_name,
+        'Host': d.host,
+        'Last booted timestamp': d.ts
+    }
+
+    for name, value in details.items():
+        print("  {0:{width}{base}}: {1}".format(name, value, width=25, base='s'))
+
+    print("  Devices:")
+    print("  --------")
+    for dev in d.devices:
+        dev_details = {
+            'summary': dev.summary,
+            'device type': dev.type
+        }
+
+        print("  label: {0}".format(dev.label))
+        print("  ------------------")
+        for name, value in dev_details.items():
+            print("    {0:{width}{base}}: {1}".format(name, value, width=15, base='s'))
+
+            ds = dev.ds
+            if ds is None:
+                continue
+
+            print("    datastore")
+            print("        name: {0}".format(ds.ds_name))
+            print("        summary")
+            summary = {
+                'capacity': sizeof_fmt(ds.ds_capacity),
+                'freeSpace': sizeof_fmt(ds.ds_freespace),
+                'file system': ds.ds_fs,
+                'url': ds.ds_url
+            }
+            for key, val in summary.items():
+                print("            {0}: {1}".format(key, val))
+            print("    fileName: {0}".format(ds.filename))
+            print("  ------------------")
 
 def vm_create(s, opt):
     vm_name = opt['<name>']
@@ -152,12 +197,13 @@ class EsxVirtualMachineInfo:
         self.uptime = humanize_time(stats.uptimeSeconds)
 
 class EsxVirtualMachineDeviceHDD:
-    def _init__(self, ds):
+    def __init__(self, ds, filename):
         self.ds_name = ds.name
         self.ds_capacity = ds.summary.capacity
         self.ds_freespace = ds.summary.freeSpace
         self.ds_fs = ds.summary.type
         self.ds_url = ds.summary.url
+        self.filename = filename
 
 class EsxVirtualMachineDevice:
     def __init__(self, d):
@@ -171,10 +217,10 @@ class EsxVirtualMachineDevice:
             # without making many assumptions about the backing type, if the
             # backing type has a file name we *know* it's sitting on a datastore
             # and will have to have all of the following attributes.
-            if hasattr(device.backing, 'fileName'):
+            if hasattr(d.backing, 'fileName'):
                 datastore = d.backing.datastore
                 if datastore:
-                    self.ds = EsxVirtualMachineDeviceHDD(datastore)
+                    self.ds = EsxVirtualMachineDeviceHDD(datastore, d.backing.fileName)
 
 class EsxVirtualMachineDetails:
     def __init__(self, vm):
@@ -188,8 +234,8 @@ class EsxVirtualMachineDetails:
         self.ts = vm.runtime.bootTime
 
         self.devices = []
-        for device in vm.config.hardware.device:
-            d = EsxVirtualMachineDevice(device)
+        for dev in vm.config.hardware.device:
+            d = EsxVirtualMachineDevice(dev)
             self.devices.append(d)
 
 class EsxVirtualMachine:
@@ -206,59 +252,6 @@ class EsxVirtualMachine:
 
     def details(self):
         return EsxVirtualMachineDetails(self.vm)
-
-    def print_details(self):
-        details = {'Name': self.vm.summary.config.name,
-                   'Instance UUID': self.vm.summary.config.instanceUuid,
-                   'Bios UUID': self.vm.summary.config.uuid,
-                   'Path to VM': self.vm.summary.config.vmPathName,
-                   'Guest OS id': self.vm.summary.config.guestId,
-                   'Guest OS name': self.vm.summary.config.guestFullName,
-                   'Host': self.vm.runtime.host.name,
-                   'Last booted timestamp': self.vm.runtime.bootTime }
-
-        for name, value in details.items():
-            print("  {0:{width}{base}}: {1}".format(name, value, width=25, base='s'))
-
-        print("  Devices:")
-        print("  --------")
-        for device in self.vm.config.hardware.device:
-            # diving into each device, we pull out a few interesting bits
-            dev_details = {'summary': device.deviceInfo.summary,
-                           'device type': type(device).__name__ }
-
-            print("  label: {0}".format(device.deviceInfo.label))
-            print("  ------------------")
-            for name, value in dev_details.items():
-                print("    {0:{width}{base}}: {1}".format(name, value, width=15, base='s'))
-
-            if device.backing is None:
-                continue
-
-            # the following is a bit of a hack, but it lets us build a summary
-            # without making many assumptions about the backing type, if the
-            # backing type has a file name we *know* it's sitting on a datastore
-            # and will have to have all of the following attributes.
-            if hasattr(device.backing, 'fileName'):
-                datastore = device.backing.datastore
-                if datastore:
-                    print("    datastore")
-                    print("        name: {0}".format(datastore.name))
-                    # there may be multiple hosts, the host property
-                    # is a host mount info type not a host system type
-                    # but we can navigate to the host system from there
-                    for host_mount in datastore.host:
-                        host_system = host_mount.key
-                        print("        host: {0}".format(host_system.name))
-                    print("        summary")
-                    summary = {'capacity': sizeof_fmt(datastore.summary.capacity),
-                               'freeSpace': sizeof_fmt(datastore.summary.freeSpace),
-                               'file system': datastore.summary.type,
-                               'url': datastore.summary.url }
-                    for key, val in summary.items():
-                        print("            {0}: {1}".format(key, val))
-                print("    fileName: {0}".format(device.backing.fileName))
-            print("  ------------------")
 
     def destroy(self):
         print 'Destroying VM %s' % self.name
