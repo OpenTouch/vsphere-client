@@ -1,7 +1,7 @@
 from pyVmomi import vim
 from tasks import WaitForTasks
 from tabulate import tabulate
-from misc import sizeof_fmt, humanize_time, esx_get_obj
+from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name
 
 ###########
 # HELPERS #
@@ -117,7 +117,7 @@ class VirtualMachineInfo:
         self.name = config.name
         self.status = runtime.powerState
         self.pool = config.vmPathName.split(' ')[0].strip('[').strip(']')
-        self.host = str(runtime.host).split(':')[1].strip("'")
+        self.host = esx_name(str(runtime.host))
         self.folder = vm_guess_folder(vm)
         _ha = runtime.faultToleranceState
         if _ha == "notConfigured":
