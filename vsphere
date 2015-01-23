@@ -4,28 +4,28 @@
 Interactive CLI for VMware vSphere orchestration.
 
 Usage:
-    vsphere.py dc list
-    vsphere.py dc net <name>
-    vsphere.py dc ds <name>
-    vsphere.py host list
-    vsphere.py host hw <name>
-    vsphere.py host net <name>
-    vsphere.py host ds <name>
-    vsphere.py host perf <name>
-    vsphere.py vm list [<name>]
-    vsphere.py vm details <name>
-    vsphere.py vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<network_name>] [--folder=<Where_the_vm_is_stored>]
-    vsphere.py vm delete <name>
-    vsphere.py vm start <name>
-    vsphere.py vm stop <name>
-    vsphere.py vm reset <name>
-    vsphere.py vm reboot <name>
-    vsphere.py vm suspend <name>
-    vsphere.py template list [<name>]
-    vsphere.py datastore list
-    vsphere.py datastore browse <name> <path>
-    vsphere.py datastore download <name> <path>
-    vsphere.py datastore upload <name> <file> <path>
+    vsphere dc list
+    vsphere dc net <name>
+    vsphere dc ds <name>
+    vsphere host list
+    vsphere host hw <name>
+    vsphere host net <name>
+    vsphere host ds <name>
+    vsphere host perf <name>
+    vsphere vm list [<name>]
+    vsphere vm details <name>
+    vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<network_name>] [--folder=<Where_the_vm_is_stored>]
+    vsphere vm delete <name>
+    vsphere vm start <name>
+    vsphere vm stop <name>
+    vsphere vm reset <name>
+    vsphere vm reboot <name>
+    vsphere vm suspend <name>
+    vsphere template list [<name>]
+    vsphere datastore list
+    vsphere datastore browse <name> <path>
+    vsphere datastore download <name> <path>
+    vsphere datastore upload <name> <file> <path>
 
 Options:
     -h, --help         Show this screen and exit.
