@@ -13,8 +13,8 @@ def vm_get_all(service):
     for v in vms:
         if v.summary.config.template:
             continue
-        #vm = VirtualMachine(service, v)
-        l.append(v)
+        vm = EsxVirtualMachine(service, v)
+        l.append(vm)
     return l
 
 def vm_guess_folder(vm):
@@ -30,8 +30,9 @@ def vm_list(s, opt):
     tabs = []
     headers = [ "Name", "Status", "Pool", "Host", "Folder", "HA", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
 
-    for vm in vms:
+    for v in vms:
         # retrieve infos
+        vm = v.info()
         hd_size = "{0} / {1}".format(vm.hd_committed, vm.hd_uncommitted)
         vals = [ vm.name, vm.status, vm.pool, vm.host, vm.folder, vm.ha,
                  vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, hd_size, vm.uptime ]
@@ -45,7 +46,7 @@ def vm_list(s, opt):
     print tabulate(tabs, headers)
 
 def vm_details(s, opt):
-    vm = VirtualMachine(s, name=opt['<name>'])
+    vm = EsxVirtualMachine(s, name=opt['<name>'])
     vm.print_details()
 
 def vm_create(s, opt):
@@ -67,28 +68,28 @@ def vm_create(s, opt):
         VirtualMachineCreation(s, vm_name, "Cluster1", template, memory, cpus, net_name, folder)
 
 def vm_delete(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.stop()
     vm.destroy()
 
 def vm_start(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.start()
 
 def vm_stop(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.stop()
 
 def vm_reset(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.reset()
 
 def vm_reboot(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.reboot()
 
 def vm_suspend(s, opt):
-    vm = VirtualMachine(s, name=opt['name'])
+    vm = EsxVirtualMachine(s, name=opt['name'])
     vm.suspend()
 
 def vm_parser(service, opt):
@@ -115,7 +116,6 @@ class EsxVirtualMachineInfo:
         storage = summary.storage
         stats = summary.quickStats
 
-        self.vm = vm
         self.name = config.name
         self.status = runtime.powerState
         self.pool = config.vmPathName.split(' ')[0].strip('[').strip(']')
@@ -136,19 +136,25 @@ class EsxVirtualMachineInfo:
         self.hd_uncommitted = storage.uncommitted / 1024 / 1024 / 1024
         self.uptime = humanize_time(stats.uptimeSeconds)
 
-class VirtualMachine:
-    def __init__(self, service, name=None, uuid=None, ip=None):
+class EsxVirtualMachine:
+    def __init__(self, service, vm):#name=None, uuid=None, ip=None):
         self.service = service
-        self.vm = None
+        self.vm = vm
 
-        if name:
-            self.vm = self.service.content.searchIndex.FindByDnsName(None, name, True)
-        elif uuid:
-            self.vm = self.service.content.searchIndex.FindByUuid(None, uuid, True, True)
-        elif ip:
-            self.vm = self.service.content.searchIndex.FindByIp(None, ip, True)
+        # if name:
+        #     self.vm = self.service.content.searchIndex.FindByDnsName(None, name, True)
+        # elif uuid:
+        #     self.vm = self.service.content.searchIndex.FindByUuid(None, uuid, True, True)
+        # elif ip:
+        #     self.vm = self.service.content.searchIndex.FindByIp(None, ip, True)
 
         self.name = self.vm.name
+
+    def __str__(self):
+        return self.name
+
+    def info(self):
+        return EsxVirtualMachineInfo(self.vm)
 
     def print_details(self):
         details = {'Name': self.vm.summary.config.name,
@@ -243,15 +249,16 @@ class EsxVirtualMachinePool:
         self.hd_committed = 0
         self.hd_uncommitted = 0
 
-        vm_list = vm_get_all(service)
-        for vm in vm_list:
-            vminfo = EsxVirtualMachineInfo(vm)
-            self.vms.append(vminfo)
-            if vminfo.status == "poweredOn":
-                self.cpu += vminfo.cpu
-                self.mem += vminfo.mem
-                self.hd_committed += vminfo.hd_committed
-                self.hd_uncommitted += vminfo.hd_uncommitted
+        self.vms = vm_get_all(service)
+        #for v in vm_list:
+       #     vm = EsxVirtualMachine(service, v)
+        #    self.vms.append(vm)
+            # vminfo = vm.info()
+            # if vminfo.status == "poweredOn":
+            #     self.cpu += vminfo.cpu
+            #     self.mem += vminfo.mem
+            #     self.hd_committed += vminfo.hd_committed
+            #     self.hd_uncommitted += vminfo.hd_uncommitted
 
     def list(self):
         return self.vms
