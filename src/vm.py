@@ -15,7 +15,16 @@ def vm_get_children(x, node):
         elif type(c) == vim.VirtualMachine:
             x.append(c)
 
-def vm_display_properties(vms, pool=None):
+def vm_guess_folder(vm):
+    if vm.parent.name != "vm":
+        return vm_guess_folder(vm.parent) + vm.parent.name
+    else:
+        return "/"
+
+def vm_list(s, opt):
+    pool = VirtualMachinePool(s)
+    vms = pool.list()
+
     tabs = []
     headers = [ "Name", "Status", "Pool", "Host", "Folder", "HA", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
 
@@ -33,17 +42,6 @@ def vm_display_properties(vms, pool=None):
         tabs.append(vals)
 
     print tabulate(tabs, headers)
-
-def vm_guess_folder(vm):
-    if vm.parent.name != "vm":
-        return vm_guess_folder(vm.parent) + vm.parent.name
-    else:
-        return "/"
-
-def vm_list(s, opt):
-    pool = VirtualMachinePool(s)
-    vms = pool.list()
-    vm_display_properties(vms, pool)
 
 def vm_details(s, opt):
     vm = VirtualMachine(s, name=opt['<name>'])
