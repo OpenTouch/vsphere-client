@@ -22,7 +22,6 @@ Usage:
     vsphere.py vm reboot <name>
     vsphere.py vm suspend <name>
     vsphere.py template list [<name>]
-    vsphere.py pool list
     vsphere.py datastore list
     vsphere.py datastore browse <name> <path>
     vsphere.py datastore download <name> <path>
@@ -42,7 +41,6 @@ from config import EsxConfig
 from dc import dc_parser
 from host import host_parser
 from vm import vm_parser
-from pool import pool_parser
 from template import template_parser
 from datastore import datastore_parser
 
@@ -51,7 +49,6 @@ VERSION = "1.0"
 def opt_parser(opt):
     if   opt['vm']        == True: vm_parser(service, opt)
     elif opt['template']  == True: template_parser(service, opt)
-    elif opt['pool']      == True: pool_parser(service, opt)
     elif opt['host']      == True: host_parser(service, opt)
     elif opt['dc']        == True: dc_parser(service, opt)
     elif opt['datastore'] == True: datastore_parser(service, opt)
