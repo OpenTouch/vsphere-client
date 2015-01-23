@@ -1,19 +1,21 @@
 from pyVmomi import vim
 from tasks import WaitForTasks
 from tabulate import tabulate
-from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name
+from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects
 
 ###########
 # HELPERS #
 ###########
 
-def vm_get_children(x, node):
-    children = node.childEntity
-    for c in children:
-        if type(c) == vim.Folder:
-            vm_get_children(x, c)
-        elif type(c) == vim.VirtualMachine:
-            x.append(c)
+def vm_get_all(service):
+    l = []
+    vms = esx_objects(service, vim.VirtualMachine)
+    for v in vms:
+        if v.summary.config.template:
+            continue
+        #vm = VirtualMachine(service, v)
+        l.append(v)
+    return l
 
 def vm_guess_folder(vm):
     if vm.parent.name != "vm":
@@ -241,29 +243,15 @@ class VirtualMachinePool:
         self.hd_committed = 0
         self.hd_uncommitted = 0
 
-        content = service.RetrieveContent()
-        children = content.rootFolder.childEntity
-        for child in children:
-            if not hasattr(child, 'vmFolder'): # some other non-datacenter type object
-                continue
-
-            datacenter = child
-            vm_folder = datacenter.vmFolder
-            vm_list = []
-            vm_get_children(vm_list, vm_folder)
-
-            for vm in vm_list:
-                # discard templates
-                if vm.summary.config.template:
-                    continue
-
-                vminfo = EsxVirtualMachineInfo(vm)
-                self.vms.append(vminfo)
-                if vminfo.status == "poweredOn":
-                    self.cpu += vminfo.cpu
-                    self.mem += vminfo.mem
-                    self.hd_committed += vminfo.hd_committed
-                    self.hd_uncommitted += vminfo.hd_uncommitted
+        vm_list = vm_get_all(service)
+        for vm in vm_list:
+            vminfo = EsxVirtualMachineInfo(vm)
+            self.vms.append(vminfo)
+            if vminfo.status == "poweredOn":
+                self.cpu += vminfo.cpu
+                self.mem += vminfo.mem
+                self.hd_committed += vminfo.hd_committed
+                self.hd_uncommitted += vminfo.hd_uncommitted
 
     def list(self):
         return self.vms

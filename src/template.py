@@ -1,6 +1,6 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from vm import vm_get_children, vm_guess_folder
+from vm import vm_guess_folder
 from misc import esx_name, esx_objects
 
 ###########
