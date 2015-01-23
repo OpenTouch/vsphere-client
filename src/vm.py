@@ -151,6 +151,47 @@ class EsxVirtualMachineInfo:
         self.hd_uncommitted = storage.uncommitted / 1024 / 1024 / 1024
         self.uptime = humanize_time(stats.uptimeSeconds)
 
+class EsxVirtualMachineDeviceHDD:
+    def _init__(self, ds):
+        self.ds_name = ds.name
+        self.ds_capacity = ds.summary.capacity
+        self.ds_freespace = ds.summary.freeSpace
+        self.ds_fs = ds.summary.type
+        self.ds_url = ds.summary.url
+
+class EsxVirtualMachineDevice:
+    def __init__(self, d):
+        self.summary = d.deviceInfo.summary
+        self.type = type(d).__name__
+        self.label = d.deviceInfo.label
+
+        self.ds = None
+        if d.backing:
+            # the following is a bit of a hack, but it lets us build a summary
+            # without making many assumptions about the backing type, if the
+            # backing type has a file name we *know* it's sitting on a datastore
+            # and will have to have all of the following attributes.
+            if hasattr(device.backing, 'fileName'):
+                datastore = d.backing.datastore
+                if datastore:
+                    self.ds = EsxVirtualMachineDeviceHDD(datastore)
+
+class EsxVirtualMachineDetails:
+    def __init__(self, vm):
+        self.name = vm.summary.config.name
+        self.instance_uuid = vm.summary.config.instanceUuid,
+        self.bios_uuid = vm.summary.config.uuid
+        self.path = vm.summary.config.vmPathName
+        self.guest_id = vm.summary.config.guestId,
+        self.guest_name = vm.summary.config.guestFullName
+        self.host = vm.runtime.host.name,
+        self.ts = vm.runtime.bootTime
+
+        self.devices = []
+        for device in vm.config.hardware.device:
+            d = EsxVirtualMachineDevice(device)
+            self.devices.append(d)
+
 class EsxVirtualMachine:
     def __init__(self, service, vm):
         self.service = service
@@ -162,6 +203,9 @@ class EsxVirtualMachine:
 
     def info(self):
         return EsxVirtualMachineInfo(self.vm)
+
+    def details(self):
+        return EsxVirtualMachineDetails(self.vm)
 
     def print_details(self):
         details = {'Name': self.vm.summary.config.name,
