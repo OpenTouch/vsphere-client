@@ -7,6 +7,13 @@ from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects
 # HELPERS #
 ###########
 
+def vm_get(service, name):
+    vms = esx_objects(service, vim.VirtualMachine)
+    for v in vms:
+        if v.name == name:
+            return EsxVirtualMachine(service, v)
+    return None
+
 def vm_get_all(service):
     l = []
     vms = esx_objects(service, vim.VirtualMachine)
@@ -46,7 +53,9 @@ def vm_list(s, opt):
     print tabulate(tabs, headers)
 
 def vm_details(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['<name>'])
+    vm = vm_get(s, opt['<name>'])
+    if not vm:
+        return
     vm.print_details()
 
 def vm_create(s, opt):
@@ -68,29 +77,35 @@ def vm_create(s, opt):
         VirtualMachineCreation(s, vm_name, "Cluster1", template, memory, cpus, net_name, folder)
 
 def vm_delete(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.stop()
-    vm.destroy()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.stop()
+        vm.destroy()
 
 def vm_start(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.start()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.start()
 
 def vm_stop(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.stop()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.stop()
 
 def vm_reset(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.reset()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.reset()
 
 def vm_reboot(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.reboot()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.reboot()
 
 def vm_suspend(s, opt):
-    vm = EsxVirtualMachine(s, name=opt['name'])
-    vm.suspend()
+    vm = vm_get(s, opt['<name>'])
+    if vm:
+        vm.suspend()
 
 def vm_parser(service, opt):
     if   opt['list']    == True: vm_list(service, opt)
