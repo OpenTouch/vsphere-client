@@ -1,31 +1,37 @@
 from pyVmomi import vim
 from tabulate import tabulate
 from vm import vm_get_children, vm_guess_folder
+from misc import esx_name, esx_objects
 
 ###########
 # HELPERS #
 ###########
 
-def template_display_properties(templates):
-    tabs = []
-    headers = [ "Name", "Pool", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
+def template_get_all(service):
+    l = []
+    vms = esx_objects(service, vim.VirtualMachine)
+    for v in vms:
+        if not v.summary.config.template:
+            continue
+        vm = EsxTemplate(service, v)
+        l.append(vm)
+    return l
 
-    for t in templates:
-        vals = [ t.name, t.pool, t.folder, t.os, t.cpu, t.mem, t.nic ]
+def template_list(s, opt):
+    pool = EsxTemplatePool(s)
+    tmpls = pool.list()
+
+    tabs = []
+    headers = [ "Name", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
+
+    for t in tmpls:
+        info = t.info()
+
+        vals = [ info.name, info.folder, info.os, info.cpu, info.mem, info.nic ]
         tabs.append(vals)
         tabs.sort(reverse=False)
 
     print tabulate(tabs, headers)
-
-def template_list(s, opt):
-    pool = TemplatePool(s)
-    template_name = opt['<name>']
-    if template_name:
-        t = pool.get(template_name)
-        template_display_properties([t])
-    else:
-        tmpls = pool.list()
-        template_display_properties(tmpls)
 
 def template_parser(service, opt):
     if opt['list'] == True: template_list(service, opt)
@@ -34,54 +40,33 @@ def template_parser(service, opt):
 # CLASSES #
 ###########
 
-class TemplateInfo:
-    def __init__(self, vm):
-        summary = vm.summary
+class EsxTemplateInfo:
+    def __init__(self, t):
+        summary = t.summary
         config = summary.config
 
-        self.name = config.name
-        self.pool = config.vmPathName.split(' ')[0].strip('[').strip(']')
-        self.folder = vm_guess_folder(vm)
-        self.os = config.guestFullName
-        self.cpu = config.numCpu
-        self.mem = config.memorySizeMB
-        self.nic = config.numEthernetCards
+        self.name   = config.name
+        self.folder = vm_guess_folder(t)
+        self.os     = config.guestFullName
+        self.cpu    = config.numCpu
+        self.mem    = config.memorySizeMB
+        self.nic    = config.numEthernetCards
+
+class EsxTemplate:
+    def __init__(self, service, template):
+        self.service = service
+        self.template = template
+        self.name = template.name
+
+    def info(self):
+        return EsxTemplateInfo(self.template)
+
     def __str__(self):
-        str  = "Name: {0}\n".format(self.name)
-        str += "Pool: {0}\n".format(self.pool)
-        str += "Folder: {0}\n".format(self.folder)
-        str += "OS: {0}\n".format(self.os)
-        str += "CPU: {0}\n".format(self.cpu)
-        str += "Memory (MB): {0}\n".format(self.mem)
-        str += "NIC: {0}\n".format(self.nic)
-        return str
+        return self.name
 
-class TemplatePool:
+class EsxTemplatePool:
     def __init__(self, service):
-        self.templates = []
-
-        content = service.RetrieveContent()
-        children = content.rootFolder.childEntity
-        for child in children:
-            if not hasattr(child, 'vmFolder'): # some other non-datacenter type object
-                continue
-
-            datacenter = child
-            vm_folder = datacenter.vmFolder
-            tmpl_list = []
-            vm_get_children(tmpl_list, vm_folder)
-
-            for t in tmpl_list:
-                # this one collapses everything, dunno why:
-                if t.name.startswith("pfsense"):
-                    continue
-
-                # discard VMs
-                if not t.summary.config.template:
-                    continue
-
-                info = TemplateInfo(t)
-                self.templates.append(info)
+        self.templates = template_get_all(service)
 
     def list(self):
         return self.templates
@@ -91,3 +76,10 @@ class TemplatePool:
             if t.name == name:
                 return t
         return None
+
+    def __str__(self):
+        r  = "ESXi Templates:\n"
+        for t in self.templates:
+            r += str(t)
+        r += "\n"
+        return r
