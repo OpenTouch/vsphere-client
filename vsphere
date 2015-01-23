@@ -4,28 +4,28 @@
 Interactive CLI for VMware vSphere orchestration.
 
 Usage:
+    vsphere datastore browse <name> <path>
+    vsphere datastore download <name> <path>
+    vsphere datastore list
+    vsphere datastore upload <name> <file> <path>
+    vsphere dc ds <name>
     vsphere dc list
     vsphere dc net <name>
-    vsphere dc ds <name>
+    vsphere host ds <name>
     vsphere host list
     vsphere host hw <name>
     vsphere host net <name>
-    vsphere host ds <name>
     vsphere host perf <name>
-    vsphere vm list [<name>]
-    vsphere vm details <name>
+    vsphere template list [<name>]
     vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<network_name>] [--folder=<Where_the_vm_is_stored>]
     vsphere vm delete <name>
+    vsphere vm details <name>
+    vsphere vm list [<name>]
     vsphere vm start <name>
     vsphere vm stop <name>
-    vsphere vm reset <name>
-    vsphere vm reboot <name>
     vsphere vm suspend <name>
-    vsphere template list [<name>]
-    vsphere datastore list
-    vsphere datastore browse <name> <path>
-    vsphere datastore download <name> <path>
-    vsphere datastore upload <name> <file> <path>
+    vsphere vm reboot <name>
+    vsphere vm reset <name>
 
 Options:
     -h, --help         Show this screen and exit.
