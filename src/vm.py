@@ -104,7 +104,7 @@ def vm_parser(service, opt):
 # CLASSES #
 ###########
 
-class VirtualMachineInfo:
+class EsxVirtualMachineInfo:
     def __init__(self, vm):
         summary = vm.summary
         config = summary.config
@@ -257,7 +257,7 @@ class VirtualMachinePool:
                 if vm.summary.config.template:
                     continue
 
-                vminfo = VirtualMachineInfo(vm)
+                vminfo = EsxVirtualMachineInfo(vm)
                 self.vms.append(vminfo)
                 if vminfo.status == "poweredOn":
                     self.cpu += vminfo.cpu
