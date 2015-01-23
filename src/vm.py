@@ -133,23 +133,6 @@ class VirtualMachineInfo:
         self.hd_committed = storage.committed / 1024 / 1024 / 1024
         self.hd_uncommitted = storage.uncommitted / 1024 / 1024 / 1024
         self.uptime = humanize_time(stats.uptimeSeconds)
-    def __str__(self):
-        str  = "Name: {0}\n".format(self.name)
-        str += "Status: {0}\n".format(self.status)
-        str += "Pool: {0}\n".format(self.pool)
-        str += "Host: {0}\n".format(self.host)
-        str += "Folder: {0}\n".format(self.folder)
-        str += "HA: {0}\n".format(self.ha)
-        str += "OS: {0}\n".format(self.os)
-        str += "Hostname: {0}\n".format(self.hostname)
-        str += "IP: {0}\n".format(self.ip)
-        str += "CPU: {0}\n".format(self.cpu)
-        str += "Memory (MB): {0}\n".format(self.mem)
-        str += "NIC: {0}\n".format(self.nic)
-        str += "HDD (committed): {0}\n".format(self.hd_committed)
-        str += "HDD (uncommitted): {0}\n".format(self.hd_uncommitted)
-        str += "Uptime: {0}\n".format(self.uptime)
-        return str
 
 class VirtualMachine:
     def __init__(self, service, name=None, uuid=None, ip=None):
