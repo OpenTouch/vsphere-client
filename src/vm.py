@@ -152,17 +152,9 @@ class EsxVirtualMachineInfo:
         self.uptime = humanize_time(stats.uptimeSeconds)
 
 class EsxVirtualMachine:
-    def __init__(self, service, vm):#name=None, uuid=None, ip=None):
+    def __init__(self, service, vm):
         self.service = service
         self.vm = vm
-
-        # if name:
-        #     self.vm = self.service.content.searchIndex.FindByDnsName(None, name, True)
-        # elif uuid:
-        #     self.vm = self.service.content.searchIndex.FindByUuid(None, uuid, True, True)
-        # elif ip:
-        #     self.vm = self.service.content.searchIndex.FindByIp(None, ip, True)
-
         self.name = self.vm.name
 
     def __str__(self):
