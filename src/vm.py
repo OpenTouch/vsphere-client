@@ -24,7 +24,7 @@ def vm_guess_folder(vm):
         return "/"
 
 def vm_list(s, opt):
-    pool = VirtualMachinePool(s)
+    pool = EsxVirtualMachinePool(s)
     vms = pool.list()
 
     tabs = []
@@ -235,7 +235,7 @@ class VirtualMachine:
         task = self.vm.SuspendVM_Task()
         WaitForTasks(self.service, [task])
 
-class VirtualMachinePool:
+class EsxVirtualMachinePool:
     def __init__(self, service):
         self.vms = []
         self.cpu = 0
