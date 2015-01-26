@@ -100,11 +100,11 @@ def vm_details(s, opt):
             print("    fileName: {0}".format(ds.filename))
             print("  ------------------")
 
-def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_name, folder_name):
+def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
 
-    print 'Trying to clone %s to VM %s' % (template, vm_name)
-    if esx_get_obj(s.RetrieveContent(), vm_name, vim.VirtualMachine) != None:
-        print 'ERROR: %s already exists' % vm_name
+    print 'Trying to clone %s to VM %s' % (template, name)
+    if esx_get_obj(s.RetrieveContent(), name, vim.VirtualMachine) != None:
+        print 'ERROR: %s already exists' % name
         return
 
     content = service.RetrieveContent()
@@ -117,19 +117,19 @@ def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_na
             continue
         vm_folder = datacenter.vmFolder
 
-    if folder_name != None:
+    if folder != None:
         obj_view = content.viewManager.CreateContainerView(content.rootFolder,[vim.Folder],True)
         folder_list = obj_view.view
 
-        for folder in folder_list:
-            if folder.name == folder_name:
-                vm_folder = folder
+        for f in folder_list:
+            if f.name == folder:
+                vm_folder = f
 
-    template_vm = esx_get_obj(content, template_name, vim.VirtualMachine)
+    template_vm = esx_get_obj(content, template, vim.VirtualMachine)
     devices = []
 
-    if net_name != None:
-        pg_obj = esx_get_obj(content, net_name, vim.dvs.DistributedVirtualPortgroup)
+    if net != None:
+        pg_obj = esx_get_obj(content, net, vim.dvs.DistributedVirtualPortgroup)
         dvs_port_connection = vim.dvs.PortConnection()
         dvs_port_connection.portgroupKey= pg_obj.key
         dvs_port_connection.switchUuid= pg_obj.config.distributedVirtualSwitch.uuid
@@ -142,15 +142,15 @@ def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_na
 
                 nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.edit
                 nicspec.device = device
-                nicspec.device.deviceInfo.label = net_name
-                nicspec.device.deviceInfo.summary = net_name
+                nicspec.device.deviceInfo.label = net
+                nicspec.device.deviceInfo.summary = net
                 nicspec.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
                 nicspec.device.backing.port = dvs_port_connection
 
                 devices.append(nicspec)
 
-    cluster = esx_get_obj(content, cluster_name, vim.ClusterComputeResource)
-    resource_pool = cluster.resourcePool #
+    cl = esx_get_obj(content, cluster, vim.ClusterComputeResource)
+    resource_pool = cl.resourcePool #
 
     # vm configuration
     vmconf = vim.vm.ConfigSpec()
@@ -158,7 +158,7 @@ def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_na
     vmconf.memoryMB = memory
     vmconf.cpuHotAddEnabled = True
     vmconf.memoryHotAddEnabled = True
-    if net_name != None:
+    if net != None:
         vmconf.deviceChange = devices
 
     relospec = vim.vm.RelocateSpec()
@@ -170,9 +170,9 @@ def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_na
     clonespec.powerOn = True
 
     try:
-        clone = template_vm.Clone(folder= vm_folder, name=vm_name, spec=clonespec)
+        clone = template_vm.Clone(folder= vm_folder, name=name, spec=clonespec)
         WaitForTasks(service, [clone])
-        print "vm %s successfully created" % vm_name
+        print "vm %s successfully created" % name
     except err:
         print err
 
