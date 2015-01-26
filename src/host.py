@@ -65,13 +65,12 @@ def host_hw(s, opt):
     for d in hw.devices:
         print "  + {0} {1}".format(d[0], d[1])
 
-def host_list(s, opt):
-    pool = EsxHostPool(s)
+def host_print_details(hosts):
     headers = [ "Name", "Version", "IP", "Status", "Mem", "Mem Usage", "Mem Fairness",
                 "CPUs", "Cores", "Threads", "CPU Usage", "CPU Fairness",
                 "NICs", "VMs", "Uptime" ]
     tabs = []
-    for host in pool.hosts:
+    for host in hosts:
         info = host.info()
 
         mem = sizeof_fmt(info.mem_size)
@@ -84,6 +83,10 @@ def host_list(s, opt):
         tabs.append(vals)
 
     print tabulate(tabs, headers)
+
+def host_list(s, opt):
+    hosts = host_get_all(s)
+    host_print_details(hosts)
 
 def host_perf(s, opt):
     host = host_get(s, opt['<name>'])
