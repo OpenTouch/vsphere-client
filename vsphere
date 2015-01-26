@@ -20,6 +20,8 @@ Usage:
     vsphere host hw <name>
     vsphere host net <name>
     vsphere host perf <name>
+    vsphere pool list
+    vsphere pool vms <name>
     vsphere template list
     vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<name>] [--folder=<location>]
     vsphere vm delete <name>
@@ -45,6 +47,7 @@ from config import EsxConfig
 from cluster import cluster_parser
 from dc import dc_parser
 from host import host_parser
+from pool import pool_parser
 from vm import vm_parser
 from template import template_parser
 from datastore import datastore_parser
@@ -57,6 +60,7 @@ def opt_parser(opt):
     elif opt['host']      == True: host_parser(service, opt)
     elif opt['dc']        == True: dc_parser(service, opt)
     elif opt['cluster']   == True: cluster_parser(service, opt)
+    elif opt['pool']      == True: pool_parser(service, opt)
     elif opt['datastore'] == True: datastore_parser(service, opt)
 
 ########
