@@ -15,16 +15,11 @@ def sizeof_fmt(num):
  Get the vsphere object associated with a given text name
 """
 def esx_get_obj(service, name, kind=None):
-    obj = None
-    vimtype = []
-    if kind: vimtype = [kind]
-    content = service.RetrieveContent()
-    container = content.viewManager.CreateContainerView(content.rootFolder, vimtype, True)
-    for c in container.view:
-        if c.name == name:
-            obj = c
-            break
-    return obj
+    objs = esx_objects(service, kind)
+    for o in objs:
+        if o.name == name:
+            return o
+    return None
 
 def esx_objects(service, kind=None):
     objs = []
