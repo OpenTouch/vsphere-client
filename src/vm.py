@@ -60,12 +60,12 @@ def vm_details(s, opt):
     d = vm.details()
     details = {
         'Name': d.name,
-        'Instance UUID': d.instance_uuid,
+        'Instance UUID': d.instance_uuid[0],
         'Bios UUID': d.bios_uuid,
         'Path to VM': d.path,
-        'Guest OS id': d.guest_id,
+        'Guest OS id': d.guest_id[0],
         'Guest OS name': d.guest_name,
-        'Host': d.host,
+        'Host': d.host[0],
         'Last booted timestamp': d.ts
     }
 
