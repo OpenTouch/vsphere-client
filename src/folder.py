@@ -29,15 +29,18 @@ def folder_get_all(service):
         l.append(f)
     return l
 
-def folder_list(s, opt):
-    pool = EsxFolderPool(s)
+def folder_print_details(folders):
     headers = [ "Key", "Name", "Status" ]
     tabs = []
-    for f in pool.folders:
+    for f in folders:
        vals = [ f.key, f.name, f.status ]
        tabs.append(vals)
 
     print tabulate(tabs, headers)
+
+def folder_list(s, opt):
+    folders = folder_get_all(s)
+    folder_print_details(folders)
 
 def folder_parser(service, opt):
     if   opt['list']  == True: folder_list(service, opt)
@@ -56,23 +59,3 @@ class EsxFolder:
 
     def __str__(self):
         return self.name
-
-class EsxFolderPool:
-    def __init__(self, service):
-        self.folders = folder_get_all(service)
-
-    def list(self):
-        return self.folders
-
-    def get(self, name):
-        for f in self.folders:
-            if f.name == name:
-                return f
-        return None
-
-    def __str__(self):
-        r  = "ESXi Folders:\n"
-        for f in self.folders:
-            r += str(f)
-        r += "\n"
-        return r
