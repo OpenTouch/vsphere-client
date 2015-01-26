@@ -29,10 +29,7 @@ def vm_guess_folder(vm):
         return vm_guess_folder(vm.parent) + vm.parent.name
     return "/"
 
-def vm_list(s, opt):
-    pool = EsxVirtualMachinePool(s)
-    vms = pool.list()
-
+def vm_print_details(vms):
     tabs = []
     headers = [ "Name", "Status", "Host", "Folder", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
 
@@ -45,6 +42,10 @@ def vm_list(s, opt):
         tabs.sort(reverse=False)
 
     print tabulate(tabs, headers)
+
+def vm_list(s, opt):
+    vms = vm_get_all(s)
+    vm_print_details(vms)
 
 def vm_details(s, opt):
     vm = vm_get(s, opt['<name>'])
