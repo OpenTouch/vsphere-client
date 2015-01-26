@@ -34,7 +34,7 @@ def vm_print_details(vms):
     for v in vms:
         # retrieve infos
         vm = v.info()
-        vals = [ vm.key, vm.name, vm.status, vm.pool, vm.host, vm.folder,
+        vals = [ v.key, vm.name, vm.status, vm.pool, vm.host, vm.folder,
                  vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, vm.hd_size, vm.uptime ]
         tabs.append(vals)
         tabs.sort(reverse=False)
