@@ -15,6 +15,7 @@ Usage:
     vsphere dc ds <name>
     vsphere dc list
     vsphere dc net <name>
+    vsphere folder list
     vsphere host ds <name>
     vsphere host list
     vsphere host hw <name>
@@ -45,6 +46,7 @@ from pyVmomi import vmodl, vim
 import atexit
 from config import EsxConfig
 from cluster import cluster_parser
+from folder import folder_parser
 from dc import dc_parser
 from host import host_parser
 from pool import pool_parser
@@ -61,6 +63,7 @@ def opt_parser(opt):
     elif opt['dc']        == True: dc_parser(service, opt)
     elif opt['cluster']   == True: cluster_parser(service, opt)
     elif opt['pool']      == True: pool_parser(service, opt)
+    elif opt['folder']    == True: folder_parser(service, opt)
     elif opt['datastore'] == True: datastore_parser(service, opt)
 
 ########
