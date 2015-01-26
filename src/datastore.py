@@ -2,7 +2,7 @@ import urllib, urllib2
 from tabulate import tabulate
 from pyVmomi import vim
 from tasks import WaitForTasks
-from misc import sizeof_fmt, esx_objects
+from misc import sizeof_fmt, esx_objects, esx_name
 from config import EsxConfig
 
 ###########
@@ -27,7 +27,7 @@ def ds_get_all(service):
 
 def ds_print_details(ds):
     tabs = []
-    headers = [ "Name", "Type", "Capacity", "Free Space", "Local", "SSD", "Remote Host", "Remote Path" ]
+    headers = [ "Key", "Name", "Type", "Capacity", "Free Space", "Local", "SSD", "Remote Host", "Remote Path" ]
 
     for d in ds:
         d.info()
@@ -36,7 +36,7 @@ def ds_print_details(ds):
         ssd = "False"
         if d.ssd: ssd = "True"
 
-        vals = [ d.name, d.type, sizeof_fmt(d.capacity), sizeof_fmt(d.free_space),
+        vals = [ d.key, d.name, d.type, sizeof_fmt(d.capacity), sizeof_fmt(d.free_space),
                  local, ssd, d.host, d.path ]
         tabs.append(vals)
 
@@ -162,6 +162,8 @@ class EsxDataStore:
     def __init__(self, service, ds):
         self.service     = service
         self.ds          = ds
+        self.key         = esx_name(ds)
+        self.name        = ds.name
 
     def info(self):
         self.info        = self.ds.info

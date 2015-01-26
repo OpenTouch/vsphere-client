@@ -66,7 +66,7 @@ def host_hw(s, opt):
         print "  + {0} {1}".format(d[0], d[1])
 
 def host_print_details(hosts):
-    headers = [ "Name", "Version", "IP", "Status", "Mem", "Mem Usage", "Mem Fairness",
+    headers = [ "Key", "Name", "Version", "IP", "Status", "Mem", "Mem Usage", "Mem Fairness",
                 "CPUs", "Cores", "Threads", "CPU Usage", "CPU Fairness",
                 "NICs", "VMs", "Uptime" ]
     tabs = []
@@ -77,7 +77,7 @@ def host_print_details(hosts):
         mem_usage = "{0} %".format(round(info.mem_usage * 100 / float(info.mem_size / 1024 / 1024), 2))
         cpu_usage = "{0} %".format(round(info.mean_core_usage_mhz * 100 / float(info.cpu_mhz), 2))
 
-        vals = [ info.name, info.version, info.ip, info.status, mem, mem_usage, info.mem_fairness,
+        vals = [ host.key, info.name, info.version, info.ip, info.status, mem, mem_usage, info.mem_fairness,
                  info.cpu, info.cores, info.threads, cpu_usage, info.cpu_fairness,
                  info.nics, info.vms, humanize_time(info.uptime) ]
         tabs.append(vals)
@@ -172,6 +172,7 @@ class EsxHost:
     def __init__(self, service, host):
         self.service = service
         self.host = host
+        self.key = esx_name(host)
         self.name = self.host.name
 
     def info(self):

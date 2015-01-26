@@ -31,12 +31,12 @@ def vm_guess_folder(vm):
 
 def vm_print_details(vms):
     tabs = []
-    headers = [ "Name", "Status", "Pool", "Host", "Folder", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
+    headers = [ "Key", "Name", "Status", "Pool", "Host", "Folder", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
 
     for v in vms:
         # retrieve infos
         vm = v.info()
-        vals = [ vm.name, vm.status, vm.pool, vm.host, vm.folder,
+        vals = [ vm.key, vm.name, vm.status, vm.pool, vm.host, vm.folder,
                  vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, vm.hd_size, vm.uptime ]
         tabs.append(vals)
         tabs.sort(reverse=False)
@@ -304,6 +304,7 @@ class EsxVirtualMachine:
     def __init__(self, service, vm):
         self.service = service
         self.vm = vm
+        self.key = esx_name(vm)
         self.name = self.vm.name
 
     def __str__(self):

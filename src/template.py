@@ -19,11 +19,11 @@ def template_get_all(service):
 
 def template_print_details(templates):
     tabs = []
-    headers = [ "Name", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
+    headers = [ "Key", "Name", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
 
     for t in templates:
         info = t.info()
-        vals = [ info.name, info.folder, info.os, info.cpu, info.mem, info.nic ]
+        vals = [ t.key, info.name, info.folder, info.os, info.cpu, info.mem, info.nic ]
         tabs.append(vals)
         tabs.sort(reverse=False)
 
@@ -56,6 +56,7 @@ class EsxTemplate:
     def __init__(self, service, template):
         self.service = service
         self.template = template
+        self.key = esx_name(template)
         self.name = template.name
 
     def info(self):

@@ -14,7 +14,7 @@ EsxNetMap = {
 ###########
 
 def net_print_details(networks):
-    headers = [ "Name", "Type", "Status", "IP Pool", "Key", "Ports", "Description" ]
+    headers = [ "Key", "Name", "Type", "Status", "IP Pool", "Key", "Ports", "Description" ]
     tabs = []
 
     for n in networks:
@@ -53,6 +53,7 @@ class EsxDVPortGroup:
 class EsxNetwork:
     def __init__(self, net):
         self.net = net
+        self.key = esx_name(net)
         self.name = net.summary.name
         self.type = EsxNetMap[type(net)]
         self.status = net.overallStatus
