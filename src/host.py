@@ -120,7 +120,6 @@ def host_perf(s, opt):
 
     print tabulate(tabs, headers)
 
-
 def host_parser(service, opt):
     if   opt['list']  == True: host_list(service, opt)
     elif opt['hw']    == True: host_hw(service, opt)
