@@ -1,6 +1,6 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from misc import humanize_time, sizeof_fmt, esx_objects, esx_name
+from misc import humanize_time, sizeof_fmt, esx_objects, esx_name, esx_object_find
 from datastore import EsxDataStore, ds_print_details
 from network import EsxNetwork, net_print_details
 from perfs import EsxPerfCounter
@@ -10,18 +10,8 @@ from perfs import EsxPerfCounter
 ###########
 
 def host_get(service, name):
-    hosts = esx_objects(service, vim.HostSystem)
-    for hs in hosts:
-        # try to lookup by name first
-        hs_name = esx_name(hs)
-        if hs_name == name:
-            return EsxHost(service, hs)
-
-        # fallback to IP address lookup
-        hs_ip = hs.name
-        if hs_ip == name:
-            return EsxHost(service, hs)
-
+    x = esx_object_find(service, vim.HostSystem, name)
+    if x: return EsxHost(service, x)
     return None
 
 def host_get_all(service):

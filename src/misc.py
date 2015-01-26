@@ -35,3 +35,18 @@ def esx_objects(service, kind=None):
 
 def esx_name(obj):
     return str(obj).split(':')[1].strip("'")
+
+def esx_object_find(service, vim_type, name):
+    objs = esx_objects(service, vim_type)
+    for obj in objs:
+        # try to lookup by key first
+        ckey = esx_name(obj)
+        if ckey == name:
+            return obj
+
+        # fallback to name lookup
+        cname = obj.name
+        if cname == name:
+            return obj
+
+    return None

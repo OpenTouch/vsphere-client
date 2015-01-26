@@ -4,25 +4,15 @@ from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
 from host import EsxHost, host_print_details
 from pool import EsxResourcePool, pool_print_details
-from misc import esx_objects, esx_name, sizeof_fmt
+from misc import esx_object_find, esx_objects, esx_name, sizeof_fmt
 
 ###########
 # HELPERS #
 ###########
 
 def cluster_get(service, name):
-    cls = esx_objects(service, vim.ClusterComputeResource)
-    for c in cls:
-        # try to lookup by key first
-        ckey = esx_name(c)
-        if ckey == name:
-            return EsxCluster(service, c)
-
-        # fallback to name lookup
-        cname = cluster.name
-        if cname == name:
-            return EsxCluster(service, c)
-
+    x = esx_object_find(service, vim.ClusterComputeResource, name)
+    if x: return EsxCluster(service, x)
     return None
 
 def cluster_get_all(service):

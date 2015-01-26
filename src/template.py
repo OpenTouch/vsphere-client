@@ -1,11 +1,16 @@
 from pyVmomi import vim
 from tabulate import tabulate
 from vm import vm_guess_folder
-from misc import esx_name, esx_objects
+from misc import esx_name, esx_objects, esx_object_find
 
 ###########
 # HELPERS #
 ###########
+
+def template_get(service, name):
+    x = esx_object_find(service, vim.VirtualMachine, name)
+    if x and x.summary.config.template: return EsxTemplate(service, x)
+    return None
 
 def template_get_all(service):
     l = []

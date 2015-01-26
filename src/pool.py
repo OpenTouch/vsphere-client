@@ -1,25 +1,15 @@
 from pyVmomi import vim
 from tabulate import tabulate
 from vm import EsxVirtualMachine, vm_print_details
-from misc import esx_objects, esx_name
+from misc import esx_objects, esx_name, esx_object_find
 
 ###########
 # HELPERS #
 ###########
 
 def pool_get(service, name):
-    pool = esx_objects(service, vim.ResourcePool)
-    for pl in pool:
-        # try to lookup by key first
-        ckey = esx_name(pl)
-        if ckey == name:
-            return EsxResourcePool(service, pl)
-
-        # fallback to name lookup
-        cname = pl.name
-        if cname == name:
-            return EsxResourcePool(service, pl)
-
+    x = esx_object_find(service, vim.ResourcePool, name)
+    if x: return EsxResourcePool(service, x)
     return None
 
 def pool_get_all(service):

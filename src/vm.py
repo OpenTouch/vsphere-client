@@ -1,17 +1,15 @@
 from pyVmomi import vim
 from tasks import WaitForTasks
 from tabulate import tabulate
-from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects
+from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects, esx_object_find
 
 ###########
 # HELPERS #
 ###########
 
 def vm_get(service, name):
-    vms = esx_objects(service, vim.VirtualMachine)
-    for v in vms:
-        if v.name == name:
-            return EsxVirtualMachine(service, v)
+    x = esx_object_find(service, vim.VirtualMachine, name)
+    if x and not x.summary.config.template: return EsxVirtualMachine(service, x)
     return None
 
 def vm_get_all(service):

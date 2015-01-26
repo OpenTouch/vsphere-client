@@ -2,25 +2,15 @@ from pyVmomi import vim
 from tabulate import tabulate
 from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
-from misc import esx_objects, esx_name
+from misc import esx_objects, esx_name, esx_object_find
 
 ###########
 # HELPERS #
 ###########
 
 def dc_get(service, name):
-    centers = esx_objects(service, vim.Datacenter)
-    for dc in centers:
-        # try to lookup by key first
-        dc_key = esx_name(dc)
-        if dc_key == name:
-            return EsxDataCenter(service, dc)
-
-        # fallback to name lookup
-        dc_name = dc.name
-        if dc_name == name:
-            return EsxDataCenter(service, dc)
-
+    x = esx_object_find(service, vim.Datacenter, name)
+    if x: return EsxDataCenter(service, x)
     return None
 
 def dc_get_all(service):

@@ -1,24 +1,14 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from misc import esx_objects, esx_name
+from misc import esx_objects, esx_name, esx_object_find
 
 ###########
 # HELPERS #
 ###########
 
-def folders_get(service, name):
-    folders = esx_objects(service, vim.Folder)
-    for fd in folders:
-        # try to lookup by key first
-        ckey = esx_name(fd)
-        if ckey == name:
-            return EsxFolder(service, fd)
-
-        # fallback to name lookup
-        cname = fd.name
-        if cname == name:
-            return EsxFolder(service, fd)
-
+def folder_get(service, name):
+    x = esx_object_find(service, vim.Folder, name)
+    if x: return EsxFolder(service, x)
     return None
 
 def folder_get_all(service):
