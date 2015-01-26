@@ -47,15 +47,18 @@ def dc_ds(s, opt):
     datastores = dc.ds()
     ds_print_details(datastores)
 
-def dc_list(s, opt):
-    pool = EsxDataCenterPool(s)
+def dc_print_details(dcs):
     headers = [ "Key", "Name", "Status" ]
     tabs = []
-    for dc in pool.dc:
+    for dc in dcs:
         vals = [ dc.key, dc.name, dc.status ]
         tabs.append(vals)
 
     print tabulate(tabs, headers)
+
+def dc_list(s, opt):
+    dcs = dcs_get_all(s)
+    dc_print_details(dcs)
 
 def dc_parser(service, opt):
     if   opt['list']  == True: dc_list(service, opt)
@@ -91,23 +94,3 @@ class EsxDataCenter:
 
     def __str__(self):
         return self.name
-
-class EsxDataCenterPool:
-    def __init__(self, service):
-        self.dc = dc_get_all(service)
-
-    def list(self):
-        return self.dc
-
-    def get(self, name):
-        for d in self.dc:
-            if d.name == name:
-                return d
-        return None
-
-    def __str__(self):
-        r  = "ESXi Datacenters:\n"
-        for d in self.dc:
-            r += str(d)
-        r += "\n"
-        return r
