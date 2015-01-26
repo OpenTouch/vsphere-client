@@ -56,17 +56,20 @@ def cluster_host(s, opt):
     hosts = cluster.host()
     host_print_details(hosts)
 
-def cluster_list(s, opt):
-    pool = EsxClusterPool(s)
+def cluster_print_details(clusters):
     headers = [ "Key", "Name", "Status", "Hosts", "Cores", "Threads", "Memory" ]
     tabs = []
-    for cl in pool.clusters:
+    for cl in clusters:
         info = cl.info()
         vals = [ cl.key, cl.name, cl.status,
                  info.hosts, info.cores, info.threads, sizeof_fmt(info.mem) ]
         tabs.append(vals)
 
     print tabulate(tabs, headers)
+
+def cluster_list(s, opt):
+    clusters = cluster_get_all(s)
+    cluster_print_details(clusters)
 
 def cluster_parser(service, opt):
     if   opt['list']  == True: cluster_list(service, opt)
@@ -130,23 +133,3 @@ class EsxCluster:
 
     def __str__(self):
         return self.name
-
-class EsxClusterPool:
-    def __init__(self, service):
-        self.clusters = cluster_get_all(service)
-
-    def list(self):
-        return self.clusters
-
-    def get(self, name):
-        for c in self.clusters:
-            if c.name == name:
-                return c
-        return None
-
-    def __str__(self):
-        r  = "ESXi Clusters:\n"
-        for c in self.clusters:
-            r += str(c)
-        r += "\n"
-        return r
