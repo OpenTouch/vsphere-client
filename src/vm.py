@@ -3,6 +3,9 @@ from tasks import WaitForTasks
 from tabulate import tabulate
 from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects
 
+VM_DEFAULT_MEMORY = 1024 # MB
+VM_DEFAULT_CPU = 1
+
 ###########
 # HELPERS #
 ###########
@@ -104,10 +107,10 @@ def vm_create(s, opt):
     net_name = opt['--network']
     memory = int(opt['--mem'])
     if memory is None:
-        memory = 1024 # MB
+        memory = VM_DEFAULT_MEMORY
     cpus = int(opt['--cpu'])
     if cpus is None:
-        cpus = 1
+        cpus = VM_DEFAULT_CPU
     folder = opt['--folder']
 
     print 'Trying to clone %s to VM %s' % (template, vm_name)
