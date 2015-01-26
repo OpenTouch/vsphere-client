@@ -253,37 +253,31 @@ class EsxVirtualMachine:
     def details(self):
         return EsxVirtualMachineDetails(self.vm)
 
+    def _task(self, name, t):
+        print '{0} VM {1}'.format(name, self.name)
+        WaitForTasks(self.service, [t])
+
     def destroy(self):
-        print 'Destroying VM %s' % self.name
-        task = self.vm.Destroy_Task()
-        WaitForTasks(self.service, [task])
+        self._task('Destroying', self.vm.Destroy_Task())
 
     def create(self):
         print 'Creating VM %s' % self.name
 
     def start(self):
-        print 'Starting VM %s' % self.name
-        task = self.vm.PowerOnVM_Task()
-        WaitForTasks(self.service, [task])
+        self._task('Starting', self.vm.PowerOnVM_Task())
 
     def stop(self):
-        print 'Stopping VM %s' % self.name
-        task = self.vm.PowerOffVM_Task()
-        WaitForTasks(self.service, [task])
+        self._task('Stopping', self.vm.PowerOffVM_Task())
 
     def reset(self):
-        print 'Hard Reseting VM %s' % self.name
-        task = self.vm.ResetVM_Task()
-        WaitForTasks(self.service, [task])
+        self._task('Hard Reseting', self.vm.ResetVM_Task())
 
     def reboot(self):
         print 'Soft Rebooting VM %s' % self.name
         self.vm.RebootGuest()
 
     def suspend(self):
-        print 'Suspending VM %s' % self.name
-        task = self.vm.SuspendVM_Task()
-        WaitForTasks(self.service, [task])
+        self._task('Suspending', self.vm.SuspendVM_Task())
 
 class EsxVirtualMachinePool:
     def __init__(self, service):
