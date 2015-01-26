@@ -30,8 +30,7 @@ def vm_get_all(service):
 def vm_guess_folder(vm):
     if vm.parent.name != "vm":
         return vm_guess_folder(vm.parent) + vm.parent.name
-    else:
-        return "/"
+    return "/"
 
 def vm_list(s, opt):
     pool = EsxVirtualMachinePool(s)
