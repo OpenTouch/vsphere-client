@@ -185,7 +185,7 @@ class EsxHost:
         l = []
         networks = self.host.network
         for net in networks:
-            n = EsxNetwork(net)
+            n = EsxNetwork(self.service, net)
             l.append(n)
         return l
 

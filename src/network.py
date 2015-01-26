@@ -51,8 +51,9 @@ class EsxDVPortGroup:
         return r
 
 class EsxNetwork:
-    def __init__(self, net):
+    def __init__(self, service, net):
         self.net = net
+        self.service = service
         self.key = esx_name(net)
         self.name = net.summary.name
         self.type = EsxNetMap[type(net)]
