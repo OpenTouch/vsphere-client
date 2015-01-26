@@ -103,11 +103,10 @@ def vm_details(s, opt):
 def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
 
     print 'Trying to clone %s to VM %s' % (template, name)
-    if esx_get_obj(s.RetrieveContent(), name, vim.VirtualMachine) != None:
+    if esx_get_obj(service, name, vim.VirtualMachine) != None:
         print 'ERROR: %s already exists' % name
         return
 
-    content = service.RetrieveContent()
     children = content.rootFolder.childEntity
     for child in children:
         if hasattr(child, 'vmFolder'):
@@ -125,11 +124,11 @@ def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
             if f.name == folder:
                 vm_folder = f
 
-    template_vm = esx_get_obj(content, template, vim.VirtualMachine)
+    template_vm = esx_get_obj(service, template, vim.VirtualMachine)
     devices = []
 
     if net != None:
-        pg_obj = esx_get_obj(content, net, vim.dvs.DistributedVirtualPortgroup)
+        pg_obj = esx_get_obj(service, net, vim.dvs.DistributedVirtualPortgroup)
         dvs_port_connection = vim.dvs.PortConnection()
         dvs_port_connection.portgroupKey= pg_obj.key
         dvs_port_connection.switchUuid= pg_obj.config.distributedVirtualSwitch.uuid
@@ -149,7 +148,7 @@ def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
 
                 devices.append(nicspec)
 
-    cl = esx_get_obj(content, cluster, vim.ClusterComputeResource)
+    cl = esx_get_obj(service, cluster, vim.ClusterComputeResource)
     resource_pool = cl.resourcePool #
 
     # vm configuration
