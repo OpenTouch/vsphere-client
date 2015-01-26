@@ -198,23 +198,3 @@ class EsxHost:
 
     def __str__(self):
         return self.name
-
-class EsxHostPool:
-    def __init__(self, service):
-        self.hosts = host_get_all(service)
-
-    def list(self):
-        return self.hosts
-
-    def get(self, name):
-        for h in self.hosts:
-            if h.name == name:
-                return h
-        return None
-
-    def __str__(self):
-        r  = "ESXi Hosts:\n"
-        for h in self.hosts:
-            r += str(h)
-        r += "\n"
-        return r
