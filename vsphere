@@ -24,7 +24,7 @@ Usage:
     vsphere pool list
     vsphere pool vms <name>
     vsphere template list
-    vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<name>] [--folder=<location>]
+    vsphere vm create <name> <template> [--mem=<memory>] [--cpu=<cpu>] [--network=<name>] [--fold=<location>]
     vsphere vm delete <name>
     vsphere vm details <name>
     vsphere vm list

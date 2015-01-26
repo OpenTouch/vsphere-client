@@ -184,7 +184,7 @@ def vm_create(s, opt):
     net = opt['--network']
     mem = opt['--mem']
     cpu = opt['--cpu']
-    folder = opt['--folder']
+    folder = opt['--fold']
 
     vm_spawn(s, name, template, "Cluster1", mem, cpu, net, folder)
 
