@@ -248,9 +248,6 @@ class EsxVirtualMachine:
     def destroy(self):
         self._task('Destroying', self.vm.Destroy_Task())
 
-    def create(self):
-        print 'Creating VM %s' % self.name
-
     def start(self):
         self._task('Starting', self.vm.PowerOnVM_Task())
 
