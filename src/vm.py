@@ -3,9 +3,6 @@ from tasks import WaitForTasks
 from tabulate import tabulate
 from misc import sizeof_fmt, humanize_time, esx_get_obj, esx_name, esx_objects
 
-VM_DEFAULT_MEMORY = 1024 # MB
-VM_DEFAULT_CPU = 1
-
 ###########
 # HELPERS #
 ###########
@@ -100,78 +97,83 @@ def vm_details(s, opt):
             print("    fileName: {0}".format(ds.filename))
             print("  ------------------")
 
-def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
+def vm_spawn(service, name, template, cluster=None, mem=None, cpu=None, net=None, folder=None):
 
     print 'Trying to clone %s to VM %s' % (template, name)
+
+    # ensure no VM with the same name already exists
     if esx_get_obj(service, name, vim.VirtualMachine) != None:
         print 'ERROR: %s already exists' % name
         return
 
-    children = content.rootFolder.childEntity
-    for child in children:
-        if hasattr(child, 'vmFolder'):
-            datacenter = child
-        else:
-            # some other non-datacenter type object
-            continue
-        vm_folder = datacenter.vmFolder
-
-    if folder != None:
-        obj_view = content.viewManager.CreateContainerView(content.rootFolder,[vim.Folder],True)
-        folder_list = obj_view.view
-
-        for f in folder_list:
-            if f.name == folder:
-                vm_folder = f
-
+    # ensure the template exists
     template_vm = esx_get_obj(service, template, vim.VirtualMachine)
+    if not template_vm:
+        print "ERROR: Can't find requested template %s" % template
+        return
+
+    # find the right cluster and/or ressource pool
+    if cluster:
+        cl = esx_get_obj(service, cluster, vim.ClusterComputeResource)
+    else:
+        cls = esx_objects(service, vim.ClusterComputeResource)
+        cl = cls[0]
+    rs = vim.vm.RelocateSpec()
+    rs.pool = cl.resourcePool
+
+    # ensure we find an appropriate folder
+    if not folder: folder = "vm"
+    vm_folder = esx_get_obj(service, folder, kind=vim.Folder)
+    if not vm_folder:
+        print "ERROR: Can't find requested folder %s" % folder
+        return
+
+    # build custom devices (if necessary)
     devices = []
 
-    if net != None:
-        pg_obj = esx_get_obj(service, net, vim.dvs.DistributedVirtualPortgroup)
-        dvs_port_connection = vim.dvs.PortConnection()
-        dvs_port_connection.portgroupKey= pg_obj.key
-        dvs_port_connection.switchUuid= pg_obj.config.distributedVirtualSwitch.uuid
+    if net:
+        pg = esx_get_obj(service, net, vim.dvs.DistributedVirtualPortgroup)
+        if not pg:
+            print "ERROR: Can't find requested network %s" % net
+            return
+
+        pc = vim.dvs.PortConnection()
+        pc.portgroupKey= pg.key
+        pc.switchUuid = pg.config.distributedVirtualSwitch.uuid
 
         for device in template_vm.config.hardware.device:
+            if not isinstance(device, vim.vm.device.VirtualEthernetCard):
+                continue
 
-            if isinstance(device, vim.vm.device.VirtualEthernetCard):
+            nic = vim.vm.device.VirtualDeviceSpec()
+            nic.operation = vim.vm.device.VirtualDeviceSpec.Operation.edit
+            nic.device = device
+            nic.device.deviceInfo.label = net
+            nic.device.deviceInfo.summary = net
+            nic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+            nic.device.backing.port = pc
+            devices.append(nic)
 
-                nicspec = vim.vm.device.VirtualDeviceSpec()
+    # vm custom configuration (if necessary)
+    if cpu and mem:
+        cf = vim.vm.ConfigSpec()
+        cf.numCPUs = int(cpu)
+        cf.memoryMB = int(mem)
+        cf.cpuHotAddEnabled = True
+        cf.memoryHotAddEnabled = True
+        if net:
+            cf.deviceChange = devices
 
-                nicspec.operation = vim.vm.device.VirtualDeviceSpec.Operation.edit
-                nicspec.device = device
-                nicspec.device.deviceInfo.label = net
-                nicspec.device.deviceInfo.summary = net
-                nicspec.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
-                nicspec.device.backing.port = dvs_port_connection
-
-                devices.append(nicspec)
-
-    cl = esx_get_obj(service, cluster, vim.ClusterComputeResource)
-    resource_pool = cl.resourcePool #
-
-    # vm configuration
-    vmconf = vim.vm.ConfigSpec()
-    vmconf.numCPUs = cpus
-    vmconf.memoryMB = memory
-    vmconf.cpuHotAddEnabled = True
-    vmconf.memoryHotAddEnabled = True
-    if net != None:
-        vmconf.deviceChange = devices
-
-    relospec = vim.vm.RelocateSpec()
-    relospec.pool = resource_pool
-
-    clonespec = vim.vm.CloneSpec()
-    clonespec.config = vmconf
-    clonespec.location = relospec
-    clonespec.powerOn = True
+    cs = vim.vm.CloneSpec()
+    if cpu and mem:
+        cs.config = cf
+    cs.location = rs
+    cs.powerOn = True
 
     try:
-        clone = template_vm.Clone(folder= vm_folder, name=name, spec=clonespec)
-        WaitForTasks(service, [clone])
-        print "vm %s successfully created" % name
+        task = template_vm.Clone(folder=vm_folder, name=name, spec=cs)
+        WaitForTasks(service, [task])
+        print "VM %s successfully created" % name
     except err:
         print err
 
@@ -179,15 +181,11 @@ def vm_create(s, opt):
     name = opt['<name>']
     template = opt['<template>']
     net = opt['--network']
-    mem = int(opt['--mem'])
-    if mem is None:
-        mem = VM_DEFAULT_MEMORY
-    cpus = int(opt['--cpu'])
-    if cpus is None:
-        cpus = VM_DEFAULT_CPU
+    mem = opt['--mem']
+    cpu = opt['--cpu']
     folder = opt['--folder']
 
-    vm_spawn(s, name, "Cluster1", template, mem, cpus, net, folder)
+    vm_spawn(s, name, template, "Cluster1", mem, cpu, net, folder)
 
 def vm_delete(s, opt):
     vm = vm_get(s, opt['<name>'])
