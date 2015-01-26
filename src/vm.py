@@ -307,6 +307,13 @@ class EsxVirtualMachinePool:
                 return vm
         return None
 
+    def __str__(self):
+        r  = "ESXi Virtual Machines:\n"
+        for t in self.vms:
+            r += str(t)
+        r += "\n"
+        return r
+
 class VirtualMachineCreation:
     def __init__(self, service, vm_name, cluster_name, template_name, memory, cpus, net_name, folder_name):
 
