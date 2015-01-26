@@ -98,7 +98,7 @@ def vm_details(s, opt):
             print("    fileName: {0}".format(ds.filename))
             print("  ------------------")
 
-def vm_spawn(service, name, template, cluster=None, mem=None, cpu=None, net=None, folder=None):
+def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, folder=None):
 
     print 'Trying to clone %s to VM %s' % (template, name)
 
@@ -113,14 +113,14 @@ def vm_spawn(service, name, template, cluster=None, mem=None, cpu=None, net=None
         print "ERROR: Can't find requested template %s" % template
         return
 
-    # find the right cluster and/or ressource pool
-    if cluster:
-        cl = esx_get_obj(service, cluster, vim.ClusterComputeResource)
-    else:
-        cls = esx_objects(service, vim.ClusterComputeResource)
-        cl = cls[0]
+    # find the right ressource pool
+    if not pool: pool = "Resources"
+    pl = esx_get_obj(service, pool, vim.ResourcePool)
+    if not pool:
+        print "ERROR: Can't find requested resource pool %s" % pool
+        return
     rs = vim.vm.RelocateSpec()
-    rs.pool = cl.resourcePool
+    rs.pool = pl
 
     # ensure we find an appropriate folder
     if not folder: folder = "vm"
@@ -185,8 +185,9 @@ def vm_create(s, opt):
     mem = opt['--mem']
     cpu = opt['--cpu']
     folder = opt['--fold']
+    pool = opt['--respool']
 
-    vm_spawn(s, name, template, "Cluster1", mem, cpu, net, folder)
+    vm_spawn(s, name, template, pool, mem, cpu, net, folder)
 
 def vm_delete(s, opt):
     vm = vm_get(s, opt['<name>'])
