@@ -17,21 +17,21 @@ def template_get_all(service):
         l.append(vm)
     return l
 
-def template_list(s, opt):
-    pool = EsxTemplatePool(s)
-    tmpls = pool.list()
-
+def template_print_details(templates):
     tabs = []
     headers = [ "Name", "Folder", "OS", "CPUs", "Mem (MB)", "NIC" ]
 
-    for t in tmpls:
+    for t in templates:
         info = t.info()
-
         vals = [ info.name, info.folder, info.os, info.cpu, info.mem, info.nic ]
         tabs.append(vals)
         tabs.sort(reverse=False)
 
     print tabulate(tabs, headers)
+
+def template_list(s, opt):
+    templates = template_get_all(s)
+    template_print_details(templates)
 
 def template_parser(service, opt):
     if opt['list'] == True: template_list(service, opt)
@@ -63,23 +63,3 @@ class EsxTemplate:
 
     def __str__(self):
         return self.name
-
-class EsxTemplatePool:
-    def __init__(self, service):
-        self.templates = template_get_all(service)
-
-    def list(self):
-        return self.templates
-
-    def get(self, name):
-        for t in self.templates:
-            if t.name == name:
-                return t
-        return None
-
-    def __str__(self):
-        r  = "ESXi Templates:\n"
-        for t in self.templates:
-            r += str(t)
-        r += "\n"
-        return r
