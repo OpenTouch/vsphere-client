@@ -337,23 +337,3 @@ class EsxVirtualMachine:
 
     def suspend(self):
         self._task('Suspending', self.vm.SuspendVM_Task())
-
-class EsxVirtualMachinePool:
-    def __init__(self, service):
-        self.vms = vm_get_all(service)
-
-    def list(self):
-        return self.vms
-
-    def get(self, name):
-        for vm in self.vms:
-            if vm.name == name:
-                return vm
-        return None
-
-    def __str__(self):
-        r  = "ESXi Virtual Machines:\n"
-        for t in self.vms:
-            r += str(t)
-        r += "\n"
-        return r
