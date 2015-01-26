@@ -8,6 +8,7 @@ Usage:
     vsphere cluster hosts <name>
     vsphere cluster list
     vsphere cluster net <name>
+    vsphere cluster pools <name>
     vsphere datastore browse <name> <path>
     vsphere datastore download <name> <path>
     vsphere datastore list

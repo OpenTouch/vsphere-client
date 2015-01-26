@@ -3,6 +3,7 @@ from tabulate import tabulate
 from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
 from host import EsxHost, host_print_details
+from pool import EsxResourcePool, pool_print_details
 from misc import esx_objects, esx_name, sizeof_fmt
 
 ###########
@@ -56,6 +57,14 @@ def cluster_host(s, opt):
     hosts = cluster.host()
     host_print_details(hosts)
 
+def cluster_pool(s, opt):
+    cluster = cluster_get(s, opt['<name>'])
+    if not cluster:
+        return
+
+    pools = cluster.pool()
+    pool_print_details(pools)
+
 def cluster_print_details(clusters):
     headers = [ "Key", "Name", "Status", "Hosts", "Cores", "Threads", "Memory" ]
     tabs = []
@@ -75,7 +84,8 @@ def cluster_parser(service, opt):
     if   opt['list']  == True: cluster_list(service, opt)
     elif opt['net']   == True: cluster_net(service, opt)
     elif opt['ds']    == True: cluster_ds(service, opt)
-    elif opt['hosts']  == True: cluster_host(service, opt)
+    elif opt['hosts'] == True: cluster_host(service, opt)
+    elif opt['pools'] == True: cluster_pool(service, opt)
 
 ###########
 # CLASSES #
@@ -101,13 +111,13 @@ class EsxCluster:
     def info(self):
         return EsxClusterInfo(self.cluster)
 
-    # def pool(self):
-    #     l = []
-    #     pools = self.cluster.resourcePool
-    #     for p in pools:
-    #         pl = EsxResourcePool(p)
-    #         l.append(pl)
-    #     return l
+    def pool(self):
+        l = []
+        pools = self.cluster.resourcePool
+        for p in pools:
+            pl = EsxResourcePool(p)
+            l.append(pl)
+        return l
 
     def net(self):
         l = []
