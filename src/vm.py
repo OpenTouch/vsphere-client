@@ -46,10 +46,6 @@ def vm_list(s, opt):
         tabs.append(vals)
         tabs.sort(reverse=False)
 
-    hd_total = "{0} / {1}".format(pool.hd_committed, pool.hd_uncommitted)
-    vals = [ "TOTAL", "", "", "", "", "", "", "", pool.cpu, pool.mem, "", hd_total, "" ]
-    tabs.append(vals)
-
     print tabulate(tabs, headers)
 
 def vm_details(s, opt):
@@ -281,22 +277,7 @@ class EsxVirtualMachine:
 
 class EsxVirtualMachinePool:
     def __init__(self, service):
-        self.vms = []
-        self.cpu = 0
-        self.mem = 0
-        self.hd_committed = 0
-        self.hd_uncommitted = 0
-
         self.vms = vm_get_all(service)
-        #for v in vm_list:
-       #     vm = EsxVirtualMachine(service, v)
-        #    self.vms.append(vm)
-            # vminfo = vm.info()
-            # if vminfo.status == "poweredOn":
-            #     self.cpu += vminfo.cpu
-            #     self.mem += vminfo.mem
-            #     self.hd_committed += vminfo.hd_committed
-            #     self.hd_uncommitted += vminfo.hd_uncommitted
 
     def list(self):
         return self.vms
