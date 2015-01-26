@@ -101,6 +101,12 @@ def vm_details(s, opt):
             print("  ------------------")
 
 def vm_spawn(service, vm_name, cluster_name, template_name, memory, cpus, net_name, folder_name):
+
+    print 'Trying to clone %s to VM %s' % (template, vm_name)
+    if esx_get_obj(s.RetrieveContent(), vm_name, vim.VirtualMachine) != None:
+        print 'ERROR: %s already exists' % vm_name
+        return
+
     content = service.RetrieveContent()
     children = content.rootFolder.childEntity
     for child in children:
@@ -182,11 +188,7 @@ def vm_create(s, opt):
         cpus = VM_DEFAULT_CPU
     folder = opt['--folder']
 
-    print 'Trying to clone %s to VM %s' % (template, vm_name)
-    if esx_get_obj(s.RetrieveContent(), vm_name, vim.VirtualMachine) != None:
-        print 'ERROR: %s already exists' % vm_name
-    else:
-        vm_spawn(s, vm_name, "Cluster1", template, memory, cpus, net_name, folder)
+    vm_spawn(s, vm_name, "Cluster1", template, memory, cpus, net_name, folder)
 
 def vm_delete(s, opt):
     vm = vm_get(s, opt['<name>'])
