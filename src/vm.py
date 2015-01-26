@@ -176,18 +176,18 @@ def vm_spawn(service, name, cluster, template, memory, cpus, net, folder):
         print err
 
 def vm_create(s, opt):
-    vm_name = opt['<name>']
+    name = opt['<name>']
     template = opt['<template>']
-    net_name = opt['--network']
-    memory = int(opt['--mem'])
-    if memory is None:
-        memory = VM_DEFAULT_MEMORY
+    net = opt['--network']
+    mem = int(opt['--mem'])
+    if mem is None:
+        mem = VM_DEFAULT_MEMORY
     cpus = int(opt['--cpu'])
     if cpus is None:
         cpus = VM_DEFAULT_CPU
     folder = opt['--folder']
 
-    vm_spawn(s, vm_name, "Cluster1", template, memory, cpus, net_name, folder)
+    vm_spawn(s, name, "Cluster1", template, mem, cpus, net, folder)
 
 def vm_delete(s, opt):
     vm = vm_get(s, opt['<name>'])
