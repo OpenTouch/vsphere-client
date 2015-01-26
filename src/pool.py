@@ -38,15 +38,18 @@ def pool_vm(s, opt):
     vms = pool.vm()
     vm_print_details(vms)
 
-def pool_list(s, opt):
-    pool = EsxResourcePoolPool(s)
+def pool_print_details(pools):
     headers = [ "Key", "Name", "Status" ]
     tabs = []
-    for pl in pool.pools:
+    for pl in pools:
        vals = [ pl.key, pl.name, pl.status ]
        tabs.append(vals)
 
     print tabulate(tabs, headers)
+
+def pool_list(s, opt):
+    pools = pool_get_all(s)
+    pool_print_details(pools)
 
 def pool_parser(service, opt):
     if   opt['list']  == True: pool_list(service, opt)
@@ -74,23 +77,3 @@ class EsxResourcePool:
 
     def __str__(self):
         return self.name
-
-class EsxResourcePoolPool:
-    def __init__(self, service):
-        self.pools = pool_get_all(service)
-
-    def list(self):
-        return self.pool
-
-    def get(self, name):
-        for p in self.pool:
-            if p.name == name:
-                return p
-        return None
-
-    def __str__(self):
-        r  = "ESXi Pools:\n"
-        for p in self.pool:
-            r += str(p)
-        r += "\n"
-        return r
