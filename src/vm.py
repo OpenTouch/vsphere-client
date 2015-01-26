@@ -35,14 +35,13 @@ def vm_list(s, opt):
     vms = pool.list()
 
     tabs = []
-    headers = [ "Name", "Status", "Pool", "Host", "Folder", "HA", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
+    headers = [ "Name", "Status", "Host", "Folder", "OS", "IP", "CPUs", "Mem (MB)", "NIC", "HDD (GB)", "Uptime" ]
 
     for v in vms:
         # retrieve infos
         vm = v.info()
-        hd_size = "{0} / {1}".format(vm.hd_committed, vm.hd_uncommitted)
-        vals = [ vm.name, vm.status, vm.pool, vm.host, vm.folder, vm.ha,
-                 vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, hd_size, vm.uptime ]
+        vals = [ vm.name, vm.status, vm.host, vm.folder,
+                 vm.os, vm.ip, vm.cpu, vm.mem, vm.nic, vm.hd_size, vm.uptime ]
         tabs.append(vals)
         tabs.sort(reverse=False)
 
@@ -174,22 +173,15 @@ class EsxVirtualMachineInfo:
 
         self.name = config.name
         self.status = runtime.powerState
-        self.pool = config.vmPathName.split(' ')[0].strip('[').strip(']')
         self.host = esx_name(str(runtime.host))
         self.folder = vm_guess_folder(vm)
-        _ha = runtime.faultToleranceState
-        if _ha == "notConfigured":
-            self.ha = False
-        else:
-            self.ha = True
         self.os = config.guestFullName
         self.hostname = guest.hostName
         self.ip = guest.ipAddress
         self.cpu = config.numCpu
         self.mem = config.memorySizeMB
         self.nic = config.numEthernetCards
-        self.hd_committed = storage.committed / 1024 / 1024 / 1024
-        self.hd_uncommitted = storage.uncommitted / 1024 / 1024 / 1024
+        self.hd_size = (storage.committed + storage.uncommitted) / 1024 / 1024 / 1024
         self.uptime = humanize_time(stats.uptimeSeconds)
 
 class EsxVirtualMachineDeviceHDD:
