@@ -44,12 +44,7 @@ class EsxDVPortGroup:
         self.ports = cfg.numPorts
 
     def __str__(self):
-        r  = "Distributed Virtual Port Group Information:\n"
-        r += "Name: {0}\n".format(self.name)
-        r += "Key: {0}\n".format(self.key)
-        r += "Description: {0}\n".format(self.description)
-        r += "Ports: {0}\n".format(self.ports)
-        return r
+        return self.name
 
 class EsxNetwork:
     def __init__(self, service, net):
@@ -66,12 +61,4 @@ class EsxNetwork:
             self.pg = EsxDVPortGroup(net.config)
 
     def __str__(self):
-        r  = "Network Information:\n"
-        r += "Name: {0}\n".format(self.name)
-        r += "Type: {0}\n".format(self.type)
-        r += "Status: {0}\n".format(self.status)
-        r += "IP Pool: {0}\n".format(self.ip_pool)
-        if self.type == ESX_NET_DVPG:
-            r += str(self.pg)
-        return r
-
+        return self.name
