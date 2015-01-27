@@ -221,8 +221,4 @@ class EsxDataStore:
         return files
 
     def __str__(self):
-        r  = "Name: {0}\n".format(self.name)
-        r += "Type: {0}\n".format(self.type)
-        r += "Capacity: {0}\n".format(sizeof_fmt(self.capacity))
-        r += "Free Space: {0}\n".format(sizeof_fmt(self.free_space))
-        return r
+        return self.name
