@@ -72,19 +72,20 @@ def opt_parser(opt):
 # MAIN #
 ########
 
-# use UTF-8 encoding instead of unicode to support more characters
-reload(sys)
-sys.setdefaultencoding("utf-8")
+if __name__ == '__main__':
+    # use UTF-8 encoding instead of unicode to support more characters
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
 
-# disable SSL/TLS warnings
-requests.packages.urllib3.disable_warnings()
+    # disable SSL/TLS warnings
+    requests.packages.urllib3.disable_warnings()
 
-cfg = EsxConfig()
+    cfg = EsxConfig()
 
-# Connect to vSphere
-service = connect.SmartConnect(host=cfg.vs_host, user=cfg.vs_user, pwd=cfg.vs_password, compress=False)
-atexit.register(connect.Disconnect, service)
+    # Connect to vSphere
+    service = connect.SmartConnect(host=cfg.vs_host, user=cfg.vs_user, pwd=cfg.vs_password, compress=False)
+    atexit.register(connect.Disconnect, service)
 
-# Parse command-line
-opt = docopt(__doc__, version=VERSION, argv=sys.argv[1:])
-opt_parser(opt)
+    # Parse command-line
+    opt = docopt(__doc__, version=VERSION, argv=sys.argv[1:])
+    opt_parser(opt)
