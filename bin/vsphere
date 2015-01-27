@@ -85,10 +85,6 @@ cfg = EsxConfig()
 service = connect.SmartConnect(host=cfg.vs_host, user=cfg.vs_user, pwd=cfg.vs_password, compress=False)
 atexit.register(connect.Disconnect, service)
 
-#from misc import esx_objects
-#objs = esx_objects(service)
-#print objs
-
 # Parse command-line
 opt = docopt(__doc__, version=VERSION, argv=sys.argv[1:])
 opt_parser(opt)
