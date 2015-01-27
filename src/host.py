@@ -1,6 +1,6 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from misc import humanize_time, sizeof_fmt, esx_objects, esx_name, esx_object_find
+from misc import humanize_time, sizeof_fmt, esx_objects, esx_name, esx_object_find, esx_object_get_items
 from datastore import EsxDataStore, ds_print_details
 from network import EsxNetwork, net_print_details
 from perfs import EsxPerfCounter
@@ -172,19 +172,10 @@ class EsxHost:
         return EsxHostHardware(self.host.hardware)
 
     def net(self):
-        l = []
-        networks = self.host.network
-        for net in networks:
-            n = EsxNetwork(self.service, net)
-            l.append(n)
-        return l
+        return esx_object_get_items(self.service, self.host.network, EsxNetwork)
 
     def ds(self):
-        l = []
-        for s in self.host.datastore:
-            ds = EsxDataStore(self.service, s)
-            l.append(ds)
-        return l
+        return esx_object_get_items(self.service, self.host.datastore, EsxDataStore)
 
     def __str__(self):
         return self.name

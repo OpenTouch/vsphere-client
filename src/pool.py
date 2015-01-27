@@ -1,7 +1,7 @@
 from pyVmomi import vim
 from tabulate import tabulate
 from vm import EsxVirtualMachine, vm_print_details
-from misc import esx_objects, esx_name, esx_object_find
+from misc import esx_objects, esx_name, esx_object_find, esx_object_get_items
 
 ###########
 # HELPERS #
@@ -58,12 +58,7 @@ class EsxResourcePool:
         self.status = pool.overallStatus
 
     def vm(self):
-        l = []
-        vms = self.pool.vm
-        for vm in vms:
-            v = EsxVirtualMachine(self.service, vm)
-            l.append(v)
-        return l
+        return esx_object_get_items(self.service, self.pool.vm, EsxVirtualMachine)
 
     def __str__(self):
         return self.name

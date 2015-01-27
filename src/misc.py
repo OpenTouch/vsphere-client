@@ -50,3 +50,10 @@ def esx_object_find(service, vim_type, name):
             return obj
 
     return None
+
+def esx_object_get_items(service, items, obj):
+    l = []
+    for x in items:
+        ds = obj(service, x)
+        l.append(ds)
+    return l

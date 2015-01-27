@@ -4,7 +4,7 @@ from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
 from host import EsxHost, host_print_details
 from pool import EsxResourcePool, pool_print_details
-from misc import esx_object_find, esx_objects, esx_name, sizeof_fmt
+from misc import esx_object_find, esx_objects, esx_name, esx_object_get_items, sizeof_fmt
 
 ###########
 # HELPERS #
@@ -102,34 +102,16 @@ class EsxCluster:
         return EsxClusterInfo(self.cluster)
 
     def pool(self):
-        l = []
-        pools = self.cluster.resourcePool
-        for p in pools:
-            pl = EsxResourcePool(p)
-            l.append(pl)
-        return l
+        return esx_object_get_items(self.service, self.cluster.resourcePool, EsxResourcePool)
 
     def net(self):
-        l = []
-        networks = self.cluster.network
-        for net in networks:
-            n = EsxNetwork(self.service, net)
-            l.append(n)
-        return l
+        return esx_object_get_items(self.service, self.cluster.network, EsxNetwork)
 
     def ds(self):
-        l = []
-        for s in self.cluster.datastore:
-            ds = EsxDataStore(self.service, s)
-            l.append(ds)
-        return l
+        return esx_object_get_items(self.service, self.cluster.datastore, EsxDataStore)
 
     def host(self):
-        l = []
-        for h in self.cluster.host:
-            hs = EsxHost(self.service, h)
-            l.append(hs)
-        return l
+        return esx_object_get_items(self.service, self.cluster.host, EsxHost)
 
     def __str__(self):
         return self.name

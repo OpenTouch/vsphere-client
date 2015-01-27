@@ -1,5 +1,6 @@
 from pyVmomi import vim
 from tabulate import tabulate
+from misc import esx_name
 
 ESX_NET_NETWORK = "NETWORK"
 ESX_NET_DVPG = "DV PORTGROUP"
