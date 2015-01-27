@@ -41,6 +41,7 @@ Options:
 """
 
 import os, sys
+import requests
 from docopt import docopt, DocoptExit
 from pyVim import connect
 from pyVmomi import vmodl, vim
@@ -76,8 +77,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 # disable SSL/TLS warnings
-#import requests
-#requests.packages.urllib3.disable_warnings()
+requests.packages.urllib3.disable_warnings()
 
 cfg = EsxConfig()
 
