@@ -96,24 +96,13 @@ def datastore_browse(s, opt):
     print tabulate(tabs, headers)
 
 def datastore_download(s, opt):
-    ds_name = opt['<name>']
-    ds_path = opt['<path>']
+    ds = ds_get(s, opt['<name>'])
+    if not ds:
+        return
 
-    cfg = EsxConfig()
-
-    resource = "/folder/%s" % ds_path.lstrip("/")
-    url = get_url(cfg, ds_name, resource)
-    local_file = ds_path.split('/')[-1]
-    print "Saving remote {0} to local file {1}".format(ds_path, local_file)
-
-    resp = do_request(cfg, url)
-    CHUNK = 16 * 1024
-    fd = open(local_file, "wb")
-    while True:
-        chunk = resp.read(CHUNK)
-        if not chunk: break
-        fd.write(chunk)
-    fd.close()
+    remote = opt['<path>']
+    local = remote.split('/')[-1]
+    ds.download(remote, local)
 
 def datastore_upload(s, opt):
     ds_name = opt['<name>']
@@ -219,6 +208,20 @@ class EsxDataStore:
 
         files.sort(key=lambda x: x.fullpath)
         return files
+
+    def download(self, remote, local):
+        print "Saving remote {0} to local file {1}".format(remote, local)
+        cfg = EsxConfig()
+        resource = "/folder/%s" % remote.lstrip("/")
+        url = get_url(cfg, self.name, resource)
+        resp = do_request(cfg, url)
+        CHUNK = 16 * 1024
+        fd = open(local, "wb")
+        while True:
+            chunk = resp.read(CHUNK)
+            if not chunk: break
+            fd.write(chunk)
+        fd.close()
 
     def __str__(self):
         return self.name
