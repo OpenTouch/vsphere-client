@@ -47,7 +47,7 @@ def dc_print_details(dcs):
     print tabulate(tabs, headers)
 
 def dc_list(s, opt):
-    dcs = dcs_get_all(s)
+    dcs = dc_get_all(s)
     dc_print_details(dcs)
 
 def dc_parser(service, opt):
