@@ -221,16 +221,13 @@ class EsxDataStore:
     def upload(self, local, remote):
         print "Uploading local file {0} to remote {1}".format(local, remote)
         self.config()
-        try:
-            fd = open(local, "rb")
-            data = fd.read()
-            fd.close()
-            resource = "/folder/%s" % remote.lstrip("/")
-            url = self.get_url(resource)
-            resp = self.do_request(url, data)
-            fd.close()
-        except:
-            print "ERROR uploading file"
+        fd = open(local, "rb")
+        data = fd.read()
+        fd.close()
+        resource = "/folder/%s" % remote.lstrip("/")
+        url = self.get_url(resource)
+        resp = self.do_request(url, data)
+        fd.close()
 
     def __str__(self):
         return self.name
