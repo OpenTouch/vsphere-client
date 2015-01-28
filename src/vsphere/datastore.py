@@ -172,8 +172,7 @@ class EsxDataStore:
 
     def config(self):
         cfg = EsxConfig()
-        self.cfg_host = cfg.vs_host
-        self.cfg_url = "https://{0}:443".format(self.cfg_host)
+        self.cfg_url = "https://{0}:443".format(cfg.vs_host)
         self.cfg_user = cfg.vs_user
         self.cfg_password = cfg.vs_password
 
