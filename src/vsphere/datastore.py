@@ -183,7 +183,8 @@ class EsxDataStore:
             resource = "/" + resource
 
         params = { "dsName" : self.name }
-        params["dcPath"] = self.cfg_dc
+        # find the datacenter name the datastore belongs to
+        params["dcPath"] = self.ds.parent.parent.name
         params = urllib.urlencode(params)
         return "%s%s?%s" % (self.cfg_url, resource, params)
 
