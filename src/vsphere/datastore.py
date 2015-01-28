@@ -39,34 +39,6 @@ def ds_print_details(ds):
 
     print tabulate(tabs, headers)
 
-def get_service_url(cfg):
-    return "https://{0}:443".format(cfg.vs_host)
-
-def get_url(cfg, ds_name, resource):
-    if not resource.startswith("/"):
-        resource = "/" + resource
-
-    params = { "dsName" : ds_name }
-    params["dcPath"] = cfg.vs_dc
-    params = urllib.urlencode(params)
-    return "%s%s?%s" % (get_service_url(cfg), resource, params)
-
-def build_auth_handler(cfg):
-    service_url = get_service_url(cfg)
-    user = cfg.vs_user
-    password = cfg.vs_password
-    auth_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    auth_manager.add_password(None, service_url, user, password)
-    return urllib2.HTTPBasicAuthHandler(auth_manager)
-
-def do_request(cfg, url, data=None):
-    handler = build_auth_handler(cfg)
-    opener = urllib2.build_opener(handler)
-    request = urllib2.Request(url, data = data)
-    if data:
-        request.get_method = lambda: 'PUT'
-    return opener.open(request)
-
 def datastore_list(s, opt):
     ds = ds_get_all(s)
     ds_print_details(ds)
@@ -198,12 +170,40 @@ class EsxDataStore:
         files.sort(key=lambda x: x.fullpath)
         return files
 
+    def get_service_url(self, cfg):
+        return "https://{0}:443".format(cfg.vs_host)
+
+    def get_url(self, cfg, ds_name, resource):
+        if not resource.startswith("/"):
+            resource = "/" + resource
+
+        params = { "dsName" : ds_name }
+        params["dcPath"] = cfg.vs_dc
+        params = urllib.urlencode(params)
+        return "%s%s?%s" % (self.get_service_url(cfg), resource, params)
+
+    def build_auth_handler(self, cfg):
+        service_url = self.get_service_url(cfg)
+        user = cfg.vs_user
+        password = cfg.vs_password
+        auth_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        auth_manager.add_password(None, service_url, user, password)
+        return urllib2.HTTPBasicAuthHandler(auth_manager)
+
+    def do_request(self, cfg, url, data=None):
+        handler = self.build_auth_handler(cfg)
+        opener = urllib2.build_opener(handler)
+        request = urllib2.Request(url, data = data)
+        if data:
+            request.get_method = lambda: 'PUT'
+        return opener.open(request)
+
     def download(self, remote, local):
         print "Saving remote {0} to local file {1}".format(remote, local)
         cfg = EsxConfig()
         resource = "/folder/%s" % remote.lstrip("/")
-        url = get_url(cfg, self.name, resource)
-        resp = do_request(cfg, url)
+        url = self.get_url(cfg, self.name, resource)
+        resp = self.do_request(cfg, url)
         CHUNK = 16 * 1024
         fd = open(local, "wb")
         while True:
@@ -220,8 +220,8 @@ class EsxDataStore:
             fd.close()
             resource = "/folder/%s" % remote.lstrip("/")
             cfg = EsxConfig()
-            url = get_url(cfg, self.name, resource)
-            resp = do_request(cfg, url, data)
+            url = self.get_url(cfg, self.name, resource)
+            resp = self.do_request(cfg, url, data)
             fd.close()
         except:
             print "ERROR uploading file"
