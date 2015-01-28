@@ -43,6 +43,16 @@ def datastore_list(s, opt):
     ds = ds_get_all(s)
     ds_print_details(ds)
 
+def ds_print_content(files):
+    tabs = []
+    headers = [ "Name", "Size", "Owner", "Modification Time" ]
+
+    for f in files:
+        vals = [ f.fullpath, sizeof_fmt(f.size), f.owner, f.modification ]
+        tabs.append(vals)
+
+    print tabulate(tabs, headers)
+
 def datastore_browse(s, opt):
     ds_name = opt['<name>']
     ds_path = opt['<path>']
@@ -52,17 +62,7 @@ def datastore_browse(s, opt):
         return
 
     files = ds.browse(ds_path)
-    if not files:
-        return
-
-    tabs = []
-    headers = [ "Name", "Size", "Owner", "Modification Time" ]
-
-    for f in files:
-        vals = [ f.fullpath, sizeof_fmt(f.size), f.owner, f.modification ]
-        tabs.append(vals)
-
-    print tabulate(tabs, headers)
+    ds_print_content(files)
 
 def datastore_download(s, opt):
     ds = ds_get(s, opt['<name>'])
