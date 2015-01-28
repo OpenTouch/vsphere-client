@@ -170,28 +170,30 @@ class EsxDataStore:
         files.sort(key=lambda x: x.fullpath)
         return files
 
-    def get_service_url(self, cfg):
-        return "https://{0}:443".format(cfg.vs_host)
+    def config(self):
+        cfg = EsxConfig()
+        self.cfg_host = cfg.vs_host
+        self.cfg_url = "https://{0}:443".format(self.cfg_host)
+        self.cfg_user = cfg.vs_user
+        self.cfg_password = cfg.vs_password
+        self.cfg_dc = cfg.vs_dc
 
-    def get_url(self, cfg, ds_name, resource):
+    def get_url(self, resource):
         if not resource.startswith("/"):
             resource = "/" + resource
 
-        params = { "dsName" : ds_name }
-        params["dcPath"] = cfg.vs_dc
+        params = { "dsName" : self.name }
+        params["dcPath"] = self.cfg_dc
         params = urllib.urlencode(params)
-        return "%s%s?%s" % (self.get_service_url(cfg), resource, params)
+        return "%s%s?%s" % (self.cfg_url, resource, params)
 
-    def build_auth_handler(self, cfg):
-        service_url = self.get_service_url(cfg)
-        user = cfg.vs_user
-        password = cfg.vs_password
+    def build_auth_handler(self):
         auth_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        auth_manager.add_password(None, service_url, user, password)
+        auth_manager.add_password(None, self.cfg_url, self.cfg_user, self.cfg_password)
         return urllib2.HTTPBasicAuthHandler(auth_manager)
 
-    def do_request(self, cfg, url, data=None):
-        handler = self.build_auth_handler(cfg)
+    def do_request(self, url, data=None):
+        handler = self.build_auth_handler()
         opener = urllib2.build_opener(handler)
         request = urllib2.Request(url, data = data)
         if data:
@@ -200,10 +202,10 @@ class EsxDataStore:
 
     def download(self, remote, local):
         print "Saving remote {0} to local file {1}".format(remote, local)
-        cfg = EsxConfig()
+        self.config()
         resource = "/folder/%s" % remote.lstrip("/")
-        url = self.get_url(cfg, self.name, resource)
-        resp = self.do_request(cfg, url)
+        url = self.get_url(resource)
+        resp = self.do_request(url)
         CHUNK = 16 * 1024
         fd = open(local, "wb")
         while True:
@@ -214,14 +216,14 @@ class EsxDataStore:
 
     def upload(self, local, remote):
         print "Uploading local file {0} to remote {1}".format(local, remote)
+        self.config()
         try:
             fd = open(local, "rb")
             data = fd.read()
             fd.close()
             resource = "/folder/%s" % remote.lstrip("/")
-            cfg = EsxConfig()
-            url = self.get_url(cfg, self.name, resource)
-            resp = self.do_request(cfg, url, data)
+            url = self.get_url(resource)
+            resp = self.do_request(url, data)
             fd.close()
         except:
             print "ERROR uploading file"
