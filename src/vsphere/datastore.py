@@ -2,7 +2,7 @@ import urllib, urllib2
 from tabulate import tabulate
 from pyVmomi import vim
 from tasks import WaitForTasks
-from misc import sizeof_fmt, esx_objects, esx_name
+from misc import sizeof_fmt, esx_object_find, esx_objects, esx_name
 from config import EsxConfig
 
 ###########
@@ -10,11 +10,8 @@ from config import EsxConfig
 ###########
 
 def ds_get(service, name):
-    stores = esx_objects(service, vim.Datastore)
-    for ds in stores:
-        if ds.info.name == name:
-            return EsxDataStore(service, ds)
-
+    x = esx_object_find(service, vim.Datastore, name)
+    if x: return EsxDataStore(service, x)
     return None
 
 def ds_get_all(service):
