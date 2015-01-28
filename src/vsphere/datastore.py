@@ -103,22 +103,14 @@ def datastore_download(s, opt):
 
 def datastore_upload(s, opt):
     ds_name = opt['<name>']
-    ds_file = opt['<file>']
-    ds_path = opt['<path>']
 
-    print "Uploading local file {0} to remote {1}".format(ds_file, ds_path)
+    ds = ds_get(s, opt['<name>'])
+    if not ds:
+        return
 
-    try:
-        fd = open(ds_file, "rb")
-        data = fd.read()
-        fd.close()
-        resource = "/folder/%s" % ds_path.lstrip("/")
-        cfg = EsxConfig()
-        url = get_url(cfg, ds_name, resource)
-        resp = do_request(cfg, url, data)
-        fd.close()
-    except:
-        print "ERROR uploading file"
+    local = opt['<file>']
+    remote = opt['<path>']
+    ds.upload(local, remote)
 
 def datastore_parser(service, opt):
     if   opt['list']     == True: datastore_list(service, opt)
@@ -219,6 +211,20 @@ class EsxDataStore:
             if not chunk: break
             fd.write(chunk)
         fd.close()
+
+    def upload(self, local, remote):
+        print "Uploading local file {0} to remote {1}".format(local, remote)
+        try:
+            fd = open(local, "rb")
+            data = fd.read()
+            fd.close()
+            resource = "/folder/%s" % remote.lstrip("/")
+            cfg = EsxConfig()
+            url = get_url(cfg, self.name, resource)
+            resp = do_request(cfg, url, data)
+            fd.close()
+        except:
+            print "ERROR uploading file"
 
     def __str__(self):
         return self.name
