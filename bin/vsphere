@@ -56,7 +56,7 @@ from vsphere.vm import vm_parser
 from vsphere.template import template_parser
 from vsphere.datastore import datastore_parser
 
-VERSION = "1.0"
+VERSION = "1.0.0"
 
 def opt_parser(opt):
     if   opt['vm']        == True: vm_parser(service, opt)
