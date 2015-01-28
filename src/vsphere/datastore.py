@@ -176,13 +176,18 @@ class EsxDataStore:
         self.cfg_user = cfg.vs_user
         self.cfg_password = cfg.vs_password
 
+        # find the datacenter name the datastore belongs to
+        dc = self.ds.parent
+        while not isinstance(dc, vim.Datacenter):
+            dc = dc.parent
+        self.cfg_dc = dc.name
+
     def get_url(self, resource):
         if not resource.startswith("/"):
             resource = "/" + resource
 
         params = { "dsName" : self.name }
-        # find the datacenter name the datastore belongs to
-        params["dcPath"] = self.ds.parent.parent.name
+        params["dcPath"] = self.cfg_dc
         params = urllib.urlencode(params)
         return "%s%s?%s" % (self.cfg_url, resource, params)
 
