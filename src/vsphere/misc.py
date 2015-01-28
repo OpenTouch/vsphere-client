@@ -57,3 +57,23 @@ def esx_object_get_items(service, items, obj):
         ds = obj(service, x)
         l.append(ds)
     return l
+
+def esx_objects_retrieve(service, t, obj, name=None):
+    l = []
+    objs = esx_objects(service, t)
+    for x in objs:
+        if name:
+            # try to lookup by key first
+            ckey = esx_name(x)
+            if ckey == name:
+                return obj(service, x)
+
+            # fallback to name lookup
+            cname = x.name
+            if cname == name:
+                return obj(service, x)
+        else:
+            o = obj(service, x)
+            l.append(o)
+    if name: return None
+    return l

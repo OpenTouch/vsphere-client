@@ -1,23 +1,13 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from misc import esx_objects, esx_name, esx_object_find
+from misc import esx_objects_retrieve, esx_name, esx_object_find
 
 ###########
 # HELPERS #
 ###########
 
-def folder_get(service, name):
-    x = esx_object_find(service, vim.Folder, name)
-    if x: return EsxFolder(service, x)
-    return None
-
-def folder_get_all(service):
-    l = []
-    folders = esx_objects(service, vim.Folder)
-    for fd in folders:
-        f = EsxFolder(service, fd)
-        l.append(f)
-    return l
+def folder_get(service, name=None):
+    return esx_objects_retrieve(service, vim.Folder, EsxFolder, name)
 
 def folder_print_details(folders):
     headers = [ "Key", "Name", "Status" ]
@@ -29,7 +19,7 @@ def folder_print_details(folders):
     print tabulate(tabs, headers)
 
 def folder_list(s, opt):
-    folders = folder_get_all(s)
+    folders = folder_get(s)
     folder_print_details(folders)
 
 def folder_parser(service, opt):

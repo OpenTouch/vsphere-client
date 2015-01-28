@@ -1,6 +1,6 @@
 from pyVmomi import vim
 from tabulate import tabulate
-from misc import humanize_time, sizeof_fmt, esx_objects, esx_name, esx_object_find, esx_object_get_items
+from misc import humanize_time, sizeof_fmt, esx_objects_retrieve, esx_name, esx_object_get_items
 from datastore import EsxDataStore, ds_print_details
 from network import EsxNetwork, net_print_details
 from perfs import EsxPerfCounter
@@ -9,18 +9,8 @@ from perfs import EsxPerfCounter
 # HELPERS #
 ###########
 
-def host_get(service, name):
-    x = esx_object_find(service, vim.HostSystem, name)
-    if x: return EsxHost(service, x)
-    return None
-
-def host_get_all(service):
-    l = []
-    hosts = esx_objects(service, vim.HostSystem)
-    for hs in hosts:
-        h = EsxHost(service, hs)
-        l.append(h)
-    return l
+def host_get(service, name=None):
+    return esx_objects_retrieve(service, vim.HostSystem, EsxHost, name)
 
 def host_net(s, opt):
     host = host_get(s, opt['<name>'])
@@ -75,7 +65,7 @@ def host_print_details(hosts):
     print tabulate(tabs, headers)
 
 def host_list(s, opt):
-    hosts = host_get_all(s)
+    hosts = host_get(s)
     host_print_details(hosts)
 
 def host_perf(s, opt):

@@ -4,24 +4,14 @@ from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
 from host import EsxHost, host_print_details
 from pool import EsxResourcePool, pool_print_details
-from misc import esx_object_find, esx_objects, esx_name, esx_object_get_items, sizeof_fmt
+from misc import esx_objects_retrieve, esx_name, esx_object_get_items, sizeof_fmt
 
 ###########
 # HELPERS #
 ###########
 
-def cluster_get(service, name):
-    x = esx_object_find(service, vim.ClusterComputeResource, name)
-    if x: return EsxCluster(service, x)
-    return None
-
-def cluster_get_all(service):
-    l = []
-    cls = esx_objects(service, vim.ClusterComputeResource)
-    for cl in cls:
-        c = EsxCluster(service, cl)
-        l.append(c)
-    return l
+def cluster_get(service, name=None):
+    return esx_objects_retrieve(service, vim.ClusterComputeResource, EsxCluster, name)
 
 def cluster_net(s, opt):
     cluster = cluster_get(s, opt['<name>'])
@@ -67,7 +57,7 @@ def cluster_print_details(clusters):
     print tabulate(tabs, headers)
 
 def cluster_list(s, opt):
-    clusters = cluster_get_all(s)
+    clusters = cluster_get(s)
     cluster_print_details(clusters)
 
 def cluster_parser(service, opt):

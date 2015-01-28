@@ -2,25 +2,15 @@ import urllib, urllib2
 from tabulate import tabulate
 from pyVmomi import vim
 from tasks import WaitForTasks
-from misc import sizeof_fmt, esx_object_find, esx_objects, esx_name
+from misc import sizeof_fmt, esx_objects_retrieve, esx_name
 from config import EsxConfig
 
 ###########
 # HELPERS #
 ###########
 
-def ds_get(service, name):
-    x = esx_object_find(service, vim.Datastore, name)
-    if x: return EsxDataStore(service, x)
-    return None
-
-def ds_get_all(service):
-    l = []
-    stores = esx_objects(service, vim.Datastore)
-    for s in stores:
-        dc = EsxDataStore(service, s)
-        l.append(dc)
-    return l
+def ds_get(service, name=None):
+    return esx_objects_retrieve(service, vim.Datastore, EsxDataStore, name)
 
 def ds_print_details(ds):
     tabs = []
@@ -40,7 +30,7 @@ def ds_print_details(ds):
     print tabulate(tabs, headers)
 
 def datastore_list(s, opt):
-    ds = ds_get_all(s)
+    ds = ds_get(s)
     ds_print_details(ds)
 
 def ds_print_content(files):
