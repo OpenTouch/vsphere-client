@@ -176,7 +176,6 @@ class EsxDataStore:
         self.cfg_url = "https://{0}:443".format(self.cfg_host)
         self.cfg_user = cfg.vs_user
         self.cfg_password = cfg.vs_password
-        self.cfg_dc = cfg.vs_dc
 
     def get_url(self, resource):
         if not resource.startswith("/"):

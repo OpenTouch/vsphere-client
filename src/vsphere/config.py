@@ -39,4 +39,3 @@ class EsxConfig:
             self.vs_host = parser.get('server', 'host')
             self.vs_user = parser.get('server', 'user')
             self.vs_password = parser.get('server', 'password')
-            self.vs_dc = parser.get('server', 'dc')
