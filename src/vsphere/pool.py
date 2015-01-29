@@ -1,24 +1,14 @@
 from pyVmomi import vim
 from tabulate import tabulate
 from vm import EsxVirtualMachine, vm_print_details
-from misc import esx_objects, esx_name, esx_object_find, esx_object_get_items
+from misc import esx_objects_retrieve, esx_name, esx_object_get_items
 
 ###########
 # HELPERS #
 ###########
 
-def pool_get(service, name):
-    x = esx_object_find(service, vim.ResourcePool, name)
-    if x: return EsxResourcePool(service, x)
-    return None
-
-def pool_get_all(service):
-    l = []
-    pool = esx_objects(service, vim.ResourcePool)
-    for pl in pool:
-        p = EsxResourcePool(service, pl)
-        l.append(p)
-    return l
+def pool_get(service, name=None):
+    return esx_objects_retrieve(service, vim.ResourcePool, EsxResourcePool, name)
 
 def pool_vm(s, opt):
     pool = pool_get(s, opt['<name>'])
@@ -38,7 +28,7 @@ def pool_print_details(pools):
     print tabulate(tabs, headers)
 
 def pool_list(s, opt):
-    pools = pool_get_all(s)
+    pools = pool_get(s)
     pool_print_details(pools)
 
 def pool_parser(service, opt):

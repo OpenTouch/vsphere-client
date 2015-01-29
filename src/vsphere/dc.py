@@ -2,24 +2,14 @@ from pyVmomi import vim
 from tabulate import tabulate
 from network import EsxNetwork, net_print_details
 from datastore import EsxDataStore, ds_print_details
-from misc import esx_objects, esx_name, esx_object_find, esx_object_get_items
+from misc import esx_objects_retrieve, esx_name, esx_object_get_items
 
 ###########
 # HELPERS #
 ###########
 
-def dc_get(service, name):
-    x = esx_object_find(service, vim.Datacenter, name)
-    if x: return EsxDataCenter(service, x)
-    return None
-
-def dc_get_all(service):
-    l = []
-    hosts = esx_objects(service, vim.Datacenter)
-    for hs in hosts:
-        h = EsxDataCenter(service, hs)
-        l.append(h)
-    return l
+def dc_get(service, name=None):
+    return esx_objects_retrieve(service, vim.Datacenter, EsxDataCenter, name)
 
 def dc_net(s, opt):
     dc = dc_get(s, opt['<name>'])
@@ -47,7 +37,7 @@ def dc_print_details(dcs):
     print tabulate(tabs, headers)
 
 def dc_list(s, opt):
-    dcs = dc_get_all(s)
+    dcs = dc_get(s)
     dc_print_details(dcs)
 
 def dc_parser(service, opt):

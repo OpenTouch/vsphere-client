@@ -2,28 +2,15 @@ import urllib, urllib2
 from tabulate import tabulate
 from pyVmomi import vim
 from tasks import WaitForTasks
-from misc import sizeof_fmt, esx_objects, esx_name
+from misc import sizeof_fmt, esx_objects_retrieve, esx_name
 from config import EsxConfig
 
 ###########
 # HELPERS #
 ###########
 
-def ds_get(service, name):
-    stores = esx_objects(service, vim.Datastore)
-    for ds in stores:
-        if ds.info.name == name:
-            return EsxDataStore(service, ds)
-
-    return None
-
-def ds_get_all(service):
-    l = []
-    stores = esx_objects(service, vim.Datastore)
-    for s in stores:
-        dc = EsxDataStore(service, s)
-        l.append(dc)
-    return l
+def ds_get(service, name=None):
+    return esx_objects_retrieve(service, vim.Datastore, EsxDataStore, name)
 
 def ds_print_details(ds):
     tabs = []
@@ -42,37 +29,19 @@ def ds_print_details(ds):
 
     print tabulate(tabs, headers)
 
-def get_service_url(cfg):
-    return "https://{0}:443".format(cfg.vs_host)
-
-def get_url(cfg, ds_name, resource):
-    if not resource.startswith("/"):
-        resource = "/" + resource
-
-    params = { "dsName" : ds_name }
-    params["dcPath"] = cfg.vs_dc
-    params = urllib.urlencode(params)
-    return "%s%s?%s" % (get_service_url(cfg), resource, params)
-
-def build_auth_handler(cfg):
-    service_url = get_service_url(cfg)
-    user = cfg.vs_user
-    password = cfg.vs_password
-    auth_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    auth_manager.add_password(None, service_url, user, password)
-    return urllib2.HTTPBasicAuthHandler(auth_manager)
-
-def do_request(cfg, url, data=None):
-    handler = build_auth_handler(cfg)
-    opener = urllib2.build_opener(handler)
-    request = urllib2.Request(url, data = data)
-    if data:
-        request.get_method = lambda: 'PUT'
-    return opener.open(request)
-
 def datastore_list(s, opt):
-    ds = ds_get_all(s)
+    ds = ds_get(s)
     ds_print_details(ds)
+
+def ds_print_content(files):
+    tabs = []
+    headers = [ "Name", "Size", "Owner", "Modification Time" ]
+
+    for f in files:
+        vals = [ f.fullpath, sizeof_fmt(f.size), f.owner, f.modification ]
+        tabs.append(vals)
+
+    print tabulate(tabs, headers)
 
 def datastore_browse(s, opt):
     ds_name = opt['<name>']
@@ -83,56 +52,27 @@ def datastore_browse(s, opt):
         return
 
     files = ds.browse(ds_path)
-    if not files:
-        return
-
-    tabs = []
-    headers = [ "Name", "Size", "Owner", "Modification Time" ]
-
-    for f in files:
-        vals = [ f.fullpath, sizeof_fmt(f.size), f.owner, f.modification ]
-        tabs.append(vals)
-
-    print tabulate(tabs, headers)
+    ds_print_content(files)
 
 def datastore_download(s, opt):
-    ds_name = opt['<name>']
-    ds_path = opt['<path>']
+    ds = ds_get(s, opt['<name>'])
+    if not ds:
+        return
 
-    cfg = EsxConfig()
-
-    resource = "/folder/%s" % ds_path.lstrip("/")
-    url = get_url(cfg, ds_name, resource)
-    local_file = ds_path.split('/')[-1]
-    print "Saving remote {0} to local file {1}".format(ds_path, local_file)
-
-    resp = do_request(cfg, url)
-    CHUNK = 16 * 1024
-    fd = open(local_file, "wb")
-    while True:
-        chunk = resp.read(CHUNK)
-        if not chunk: break
-        fd.write(chunk)
-    fd.close()
+    remote = opt['<path>']
+    local = remote.split('/')[-1]
+    ds.download(remote, local)
 
 def datastore_upload(s, opt):
     ds_name = opt['<name>']
-    ds_file = opt['<file>']
-    ds_path = opt['<path>']
 
-    print "Uploading local file {0} to remote {1}".format(ds_file, ds_path)
+    ds = ds_get(s, opt['<name>'])
+    if not ds:
+        return
 
-    try:
-        fd = open(ds_file, "rb")
-        data = fd.read()
-        fd.close()
-        resource = "/folder/%s" % ds_path.lstrip("/")
-        cfg = EsxConfig()
-        url = get_url(cfg, ds_name, resource)
-        resp = do_request(cfg, url, data)
-        fd.close()
-    except:
-        print "ERROR uploading file"
+    local = opt['<file>']
+    remote = opt['<path>']
+    ds.upload(local, remote)
 
 def datastore_parser(service, opt):
     if   opt['list']     == True: datastore_list(service, opt)
@@ -220,9 +160,64 @@ class EsxDataStore:
         files.sort(key=lambda x: x.fullpath)
         return files
 
+    def config(self):
+        cfg = EsxConfig()
+        self.cfg_url = "https://{0}:443".format(cfg.vs_host)
+        self.cfg_user = cfg.vs_user
+        self.cfg_password = cfg.vs_password
+
+        # find the datacenter name the datastore belongs to
+        dc = self.ds.parent
+        while not isinstance(dc, vim.Datacenter):
+            dc = dc.parent
+        self.cfg_dc = dc.name
+
+    def get_url(self, resource):
+        if not resource.startswith("/"):
+            resource = "/" + resource
+
+        params = { "dsName" : self.name }
+        params["dcPath"] = self.cfg_dc
+        params = urllib.urlencode(params)
+        return "%s%s?%s" % (self.cfg_url, resource, params)
+
+    def build_auth_handler(self):
+        auth_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        auth_manager.add_password(None, self.cfg_url, self.cfg_user, self.cfg_password)
+        return urllib2.HTTPBasicAuthHandler(auth_manager)
+
+    def do_request(self, url, data=None):
+        handler = self.build_auth_handler()
+        opener = urllib2.build_opener(handler)
+        request = urllib2.Request(url, data = data)
+        if data:
+            request.get_method = lambda: 'PUT'
+        return opener.open(request)
+
+    def download(self, remote, local):
+        print "Saving remote {0} to local file {1}".format(remote, local)
+        self.config()
+        resource = "/folder/%s" % remote.lstrip("/")
+        url = self.get_url(resource)
+        resp = self.do_request(url)
+        CHUNK = 16 * 1024
+        fd = open(local, "wb")
+        while True:
+            chunk = resp.read(CHUNK)
+            if not chunk: break
+            fd.write(chunk)
+        fd.close()
+
+    def upload(self, local, remote):
+        print "Uploading local file {0} to remote {1}".format(local, remote)
+        self.config()
+        fd = open(local, "rb")
+        data = fd.read()
+        fd.close()
+        resource = "/folder/%s" % remote.lstrip("/")
+        url = self.get_url(resource)
+        resp = self.do_request(url, data)
+        fd.close()
+
     def __str__(self):
-        r  = "Name: {0}\n".format(self.name)
-        r += "Type: {0}\n".format(self.type)
-        r += "Capacity: {0}\n".format(sizeof_fmt(self.capacity))
-        r += "Free Space: {0}\n".format(sizeof_fmt(self.free_space))
-        return r
+        return self.name
