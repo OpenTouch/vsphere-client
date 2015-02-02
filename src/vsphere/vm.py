@@ -96,7 +96,7 @@ def vm_details(s, opt):
             print("    fileName: {0}".format(ds.filename))
             print("  ------------------")
 
-def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, folder=None):
+def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, folder=None, async=False):
 
     print 'Trying to clone %s to VM %s' % (template, name)
 
@@ -121,11 +121,18 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
     rs.pool = pl
 
     # ensure we find an appropriate folder
-    if not folder: folder = "vm"
-    vm_folder = esx_get_obj(service, folder, kind=vim.Folder)
-    if not vm_folder:
-        print "ERROR: Can't find requested folder %s" % folder
-        return
+    vm_folder = esx_get_obj(service, "vm", kind=vim.Folder)
+    if not folder: folder = "/"
+    for folder_element in folder.split("/")[1:-1]:
+        found = False
+        for child in vm_folder.childEntity:
+            if child.name == folder_element:
+                found = True
+                vm_folder = child
+                break
+        if not found:
+            print "ERROR: Can't find requested folder %s" % folder
+            return
 
     # build custom devices (if necessary)
     devices = []
@@ -171,7 +178,8 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
 
     try:
         task = template_vm.Clone(folder=vm_folder, name=name, spec=cs)
-        WaitForTasks(service, [task])
+        if not async:
+            WaitForTasks(service, [task])
         print "VM %s successfully created" % name
     except err:
         print err
