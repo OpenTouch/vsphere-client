@@ -103,20 +103,20 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
     # ensure no VM with the same name already exists
     if esx_get_obj(service, name, vim.VirtualMachine) != None:
         print 'ERROR: %s already exists' % name
-        return
+        return 1
 
     # ensure the template exists
     template_vm = esx_get_obj(service, template, vim.VirtualMachine)
     if not template_vm:
         print "ERROR: Can't find requested template %s" % template
-        return
+        return 1
 
     # find the right ressource pool
     if not pool: pool = "Resources"
     pl = esx_get_obj(service, pool, vim.ResourcePool)
     if not pool:
         print "ERROR: Can't find requested resource pool %s" % pool
-        return
+        return 1
     rs = vim.vm.RelocateSpec()
     rs.pool = pl
 
@@ -132,7 +132,7 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
                 break
         if not found:
             print "ERROR: Can't find requested folder %s" % folder
-            return
+            return 1
 
     # build custom devices (if necessary)
     devices = []
@@ -141,7 +141,7 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
         pg = esx_get_obj(service, net, vim.dvs.DistributedVirtualPortgroup)
         if not pg:
             print "ERROR: Can't find requested network %s" % net
-            return
+            return 1
 
         pc = vim.dvs.PortConnection()
         pc.portgroupKey= pg.key
@@ -183,6 +183,7 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
         print "VM %s successfully created" % name
     except err:
         print err
+        return 1
 
 def vm_create(s, opt):
     name = opt['<name>']
@@ -198,7 +199,10 @@ def vm_create(s, opt):
 def vm_delete(s, opt):
     vm = vm_get(s, opt['<name>'])
     if vm:
-        vm.stop()
+        try:
+            vm.stop()
+        except:
+            print "Error while stopping %s, probably already stopped"%vm.name
         vm.destroy()
 
 def vm_start(s, opt):
