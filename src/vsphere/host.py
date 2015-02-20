@@ -54,7 +54,7 @@ def host_print_details(hosts):
         info = host.info()
 
         mem = sizeof_fmt(info.mem_size)
-        mem_usage = "{0} %".format(round(info.mem_usage * 100 / float(info.mem_size / 1024 / 1024), 2))
+        mem_usage = "{0} %".format(round(info.mem_usage * 100 / float(info.mem_size), 2))
         cpu_usage = "{0} %".format(round(info.mean_core_usage_mhz * 100 / float(info.cpu_mhz), 2))
 
         vals = [ host.key, info.name, info.version, info.ip, info.status, mem, mem_usage, info.mem_fairness,
@@ -134,7 +134,7 @@ class EsxHostInfo:
         self.status = h.overallStatus
 
         self.mem_size = h.summary.hardware.memorySize
-        self.mem_usage = h.summary.quickStats.overallMemoryUsage
+        self.mem_usage = h.summary.quickStats.overallMemoryUsage * 1024 * 1024
         self.mem_fairness = round(float(h.summary.quickStats.distributedMemoryFairness) / 1000, 3)
 
         self.cpu = h.summary.hardware.numCpuPkgs
