@@ -6,7 +6,8 @@ VSPHERE_CFG_FILE = "vsphere.conf"
 
 unix_platforms = [
     "darwin",
-    "Linux"
+    "Linux",
+    "linux2"
 ]
 
 class EsxConfig:
