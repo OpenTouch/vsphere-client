@@ -96,7 +96,7 @@ def vm_details(s, opt):
             print("    fileName: {0}".format(ds.filename))
             print("  ------------------")
 
-def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, folder=None, async=False):
+def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, folder=None, async=False, powerOn=True):
 
     print 'Trying to clone %s to VM %s' % (template, name)
 
@@ -174,7 +174,7 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
     if cpu and mem:
         cs.config = cf
     cs.location = rs
-    cs.powerOn = True
+    cs.powerOn = powerOn
 
     try:
         task = template_vm.Clone(folder=vm_folder, name=name, spec=cs)
