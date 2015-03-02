@@ -182,8 +182,8 @@ def vm_spawn(service, name, template, pool=None, mem=None, cpu=None, net=None, f
         if not async:
             WaitForTasks(service, [task])
         print "VM %s successfully created" % name
-    except err:
-        print err
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
         return 1
 
 def vm_create(s, opt):
