@@ -1,3 +1,4 @@
+import sys
 from pyVmomi import vim
 from tasks import WaitForTasks
 from tabulate import tabulate
@@ -230,6 +231,22 @@ def vm_suspend(s, opt):
     if vm:
         vm.suspend()
 
+def vm_reconfigure(vm, cpu, mem):
+    cs = vim.vm.ConfigSpec()
+    cs.cpuHotAddEnabled = True
+    cs.numCPUs = int(cpu)
+    cs.memoryHotAddEnabled = True
+    #cs.memoryMB = int(mem)
+
+    vm.reconfigure(cs)
+
+def vm_update(s, opt):
+    vm = vm_get(s, opt['<name>'])
+    cpu = opt['<cpu>']
+    mem = opt['<memory>']
+    if vm and cpu and mem:
+        vm_reconfigure(vm, cpu, mem)
+
 def vm_parser(service, opt):
     if   opt['list']    == True: vm_list(service, opt)
     elif opt['details'] == True: vm_details(service, opt)
@@ -240,6 +257,7 @@ def vm_parser(service, opt):
     elif opt['reset']   == True: vm_reset(service, opt)
     elif opt['reboot']  == True: vm_reboot(service, opt)
     elif opt['suspend'] == True: vm_suspend(service, opt)
+    elif opt['update']  == True: vm_update(service, opt)
 
 ###########
 # CLASSES #
@@ -348,3 +366,6 @@ class EsxVirtualMachine:
 
     def suspend(self):
         self._task('Suspending', self.vm.SuspendVM_Task())
+
+    def reconfigure(self, cs):
+        self._task('Reconfiguring', self.vm.ReconfigVM_Task(cs))

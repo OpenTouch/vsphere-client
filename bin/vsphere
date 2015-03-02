@@ -34,6 +34,7 @@ Usage:
     vsphere vm suspend <name>
     vsphere vm reboot <name>
     vsphere vm reset <name>
+    vsphere vm update <name> <cpu> <memory>
 
 Options:
     -h, --help         Show this screen and exit.
