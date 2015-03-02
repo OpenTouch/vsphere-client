@@ -236,7 +236,7 @@ def vm_reconfigure(vm, cpu, mem):
     cs.cpuHotAddEnabled = True
     cs.numCPUs = int(cpu)
     cs.memoryHotAddEnabled = True
-    #cs.memoryMB = int(mem)
+    cs.memoryMB = int(mem)
 
     vm.reconfigure(cs)
 
